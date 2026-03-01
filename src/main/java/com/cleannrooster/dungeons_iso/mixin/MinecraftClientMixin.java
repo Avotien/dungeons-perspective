@@ -59,7 +59,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.cleannrooster.dungeons_iso.ClientInit;
-import com.cleannrooster.dungeons_iso.compat.SpellEngineCompat;
 import com.cleannrooster.dungeons_iso.mod.Mod;
 import com.cleannrooster.dungeons_iso.util.Util;
 
@@ -138,10 +137,6 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
     public void tickXIVHEAD(CallbackInfo ci) {
         MinecraftClient client = (MinecraftClient) (Object) this;
         boolean spell = false;
-        if (FabricLoader.getInstance().isModLoaded("spell_engine")) {
-
-            spell = SpellEngineCompat.isCasting();
-        }
         boolean isController = false;
         Mod.zoom = Math.clamp(Mod.zoom,1F,10F);
 
@@ -528,10 +523,6 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
         living.setHeadYaw(MathHelper.wrapDegrees((float)(MathHelper.atan2(f, d) * 57.2957763671875) - 90.0F));
         living.prevHeadYaw = living.headYaw;
         boolean spell = false;
-        if (FabricLoader.getInstance().isModLoaded("spell_engine")) {
-
-            spell = SpellEngineCompat.isCasting();
-        }
         living.setYaw( MathHelper.clampAngle(MathHelper.wrapDegrees((float)(MathHelper.atan2(f1, d1) * 57.2957763671875) - 90.0F), living.getHeadYaw(), (float) (living.isUsingItem() || (this.options.useKey.isPressed()) || spell || (living.getMainHandStack().getItem() instanceof CrossbowItem && CrossbowItem.isCharged(living.getMainHandStack())) || mouseCooldown >= 40 ? 0 : 35)));
         living.prevYaw = (living.getYaw());
         living.bodyYaw = (living.getYaw());
@@ -675,10 +666,6 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
         }
         boolean bool = false;
         boolean spell = false;
-        if (FabricLoader.getInstance().isModLoaded("spell_engine")) {
-
-            spell = SpellEngineCompat.isCasting();
-        }
 
         if(client.player != null && Mod.enabled) {
 

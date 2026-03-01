@@ -4,7 +4,6 @@
   "package": "com.cleannrooster.dungeons_iso.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "compat.combat_roll.RollManagerMixin",
     "CameraMixin",
     "GameRendererAccessor",
     "GameRendererMixin",
