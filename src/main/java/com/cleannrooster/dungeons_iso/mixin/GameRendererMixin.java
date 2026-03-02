@@ -2,6 +2,7 @@ package com.cleannrooster.dungeons_iso.mixin;
 
 import com.cleannrooster.dungeons_iso.api.Ortho;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.systems.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
@@ -14,6 +15,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
@@ -72,7 +74,7 @@ public abstract class GameRendererMixin {
 
     @Inject(method = "getBasicProjectionMatrix", at = @At("HEAD"),cancellable = true)
 
-    public void getBasicProjectionMatrixXIV(double fov, CallbackInfoReturnable<Matrix4f> cir) {
+    public void getBasicProjectionMatrixXIV(float fov, CallbackInfoReturnable<Matrix4f> cir) {
         if(Mod.enabled && Config.GSON.instance().frustumCulling) {
             Matrix4f matrix4f = new Matrix4f();
             if (this.zoom != 1.0F) {
@@ -115,18 +117,16 @@ public abstract class GameRendererMixin {
             method = "renderWorld",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/WorldRenderer;render(Lnet/minecraft/client/render/RenderTickCounter;ZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/GameRenderer;Lnet/minecraft/client/render/LightmapTextureManager;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V"
-
+                    target = "Lnet/minecraft/client/render/WorldRenderer;render(Lnet/minecraft/client/util/ObjectAllocator;Lnet/minecraft/client/render/RenderTickCounter;ZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/GameRenderer;Lnet/minecraft/client/render/LightmapTextureManager;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V"
             ),
-            index = 6
+            index = 7
     )
     private Matrix4f orthoProjMat(Matrix4f projMat, @Local(argsOnly = true) RenderTickCounter tickCounter) {
         if (Config.GSON.instance().ortho && Mod.enabled) {
             Matrix4f mat = Ortho.createOrthoMatrix(tickCounter.getTickDelta(false), 0.0F);
-            RenderSystem.setProjectionMatrix(mat, VertexSorter.BY_Z);
+            RenderSystem.setProjectionMatrix(mat, ProjectionType.ORTHOGRAPHIC);
             return mat;
         }
-
         return projMat;
     }
 }

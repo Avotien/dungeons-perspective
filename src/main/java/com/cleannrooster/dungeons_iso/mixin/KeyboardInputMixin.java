@@ -11,6 +11,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.MovementType;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -60,7 +61,7 @@ public abstract class KeyboardInputMixin extends Input {
                         var interact = client.interactionManager.interactBlock(client.player,Hand.MAIN_HAND, result);
 
                         if (interact.isAccepted()) {
-                            if (interact.shouldSwingHand()) {
+                            if (interact == ActionResult.SUCCESS) {
                                 client.player.swingHand(hand);
                             }
 
@@ -106,7 +107,7 @@ public abstract class KeyboardInputMixin extends Input {
             this.movementSideways = movement.y;
 
         }
-        if(this.pressingBack || this.pressingForward || this.pressingLeft || this.pressingRight){
+        if(this.playerInput.backward() || this.playerInput.forward() || this.playerInput.left() || this.playerInput.right()){
             Mod.useTimer = 0;
         }
         else{

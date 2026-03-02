@@ -94,10 +94,10 @@ private  Vector3f posOffset ;
         protected int getColor(LevelSlice slice, BlockState state, BlockPos pos) {
             if (SodiumCompat.blockCullers.stream().anyMatch(blockCuller -> blockCuller.shouldCull(pos,MinecraftClient.getInstance().gameRenderer.getCamera(),MinecraftClient.getInstance().cameraEntity))) {
 
-                return ColorHelper.Argb.getArgb((int) (255 * (1 - 1)), 0, 0,0);
+                return ColorHelper.getArgb((int) (255 * (1 - 1)), 0, 0,0);
 
             }
-            return ColorHelper.Argb.getArgb((int) 255,255,255);
+            return ColorHelper.getArgb((int) 255,255,255);
         }
 
         @Override

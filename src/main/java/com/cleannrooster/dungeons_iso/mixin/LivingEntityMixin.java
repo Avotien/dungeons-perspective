@@ -20,7 +20,7 @@ public class LivingEntityMixin {
     public void teleportToCleann(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> callbackInfoReturnable) {
         Entity entity = (Entity) (Object) this;
         if (Mod.enabled && MinecraftClient.getInstance().gameRenderer.getCamera() instanceof CameraAccessor camera &&  (entity == MinecraftClient.getInstance().cameraEntity || entity == MinecraftClient.getInstance().player)){
-            camera.setPosInterfae(teleportTarget.pos());
+            camera.setPosInterfae(teleportTarget.position());
         }
     }
 

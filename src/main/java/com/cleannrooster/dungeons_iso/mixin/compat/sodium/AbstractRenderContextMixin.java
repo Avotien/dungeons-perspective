@@ -64,7 +64,7 @@ public abstract class AbstractRenderContextMixin implements BlockCullerUser {
 
 
                         }
-                        VoxelShape selfShape = direction != null ?  state.getCullingFace(MinecraftClient.getInstance().world, pos, direction) : null;
+                        VoxelShape selfShape = direction != null ?  state.getCullingFace(direction) : null;
 
                         boolean bool2 = Mod.preMod.subtract(MinecraftClient.getInstance().cameraEntity.getPos()).dotProduct(pos.toCenterPos().subtract(MinecraftClient.getInstance().cameraEntity.getPos())) >0 ;
 

@@ -37,6 +37,7 @@ import net.minecraft.item.*;
 import net.minecraft.server.command.DebugCommand;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -190,7 +191,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
 
                             ((MinecraftClientAccessor) client).setLocation(null);
                             ((MinecraftClientAccessor) client).setOriginalLocation(null);
-                            if (interact.shouldSwingHand()) {
+                            if (interact == ActionResult.SUCCESS) {
                                 itemUseCooldown = 4;
 
                                 this.player.swingHand(hand);
@@ -210,7 +211,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
 
                             ((MinecraftClientAccessor) client).setLocation(null);
                             ((MinecraftClientAccessor) client).setOriginalLocation(null);
-                            if (interact.shouldSwingHand()) {
+                            if (interact == ActionResult.SUCCESS) {
                                 itemUseCooldown = 4;
 
                                 this.player.swingHand(hand);
@@ -235,7 +236,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
 
 
             boolean bool = false;
-            if(!player.isFallFlying() && this.location != null && Config.GSON.instance().clickToMove){
+            if(!player.isGliding() && this.location != null && Config.GSON.instance().clickToMove){
                 Vec3d vec3d2 = new Vec3d((double)this.player.sidewaysSpeed, (double)this.player.upwardSpeed, (double)this.player.forwardSpeed);
 
 
@@ -255,7 +256,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
 
             }
             if(this.options.attackKey.isPressed() ){
-                mouseCooldown =  40+(int)(0.2F*20F/client.player.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED));
+                mouseCooldown =  40+(int)(0.2F*20F/client.player.getAttributeValue(EntityAttributes.ATTACK_SPEED));
             }
             if (client.player.getMainHandStack().getItem() instanceof RangedWeaponItem ||
                     client.player.getMainHandStack().getItem() instanceof ProjectileItem ||
@@ -323,13 +324,13 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
                                     disableTargeting = true;
                                     pickedTarget = null;
 
-                                    player.sendMessage(Text.translatable("Disabled Targeting"));
+                                    player.sendMessage(Text.translatable("Disabled Targeting"), false);
 
                                 }
                             } else {
                                 disableTargeting = true;
                                 pickedTarget = null;
-                                player.sendMessage(Text.translatable("Disabled Targeting"));
+                                player.sendMessage(Text.translatable("Disabled Targeting"), false);
 
                             }
                         }
@@ -363,7 +364,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
 
 
             }
-                if (((!Config.GSON.instance().turnToMouse && !player.isFallFlying()) && (
+                if (((!Config.GSON.instance().turnToMouse && !player.isGliding()) && (
                          !(bool ) && !using && mouseCooldown <= 0 && !(player.getMainHandStack().getItem() instanceof CrossbowItem item )&& ( client.player.input.getMovementInput().length() > 0.1)))) {
                     if(Mod.targeted != null){
                         EntityHitResult result = new EntityHitResult(targeted,targeted.getEyePos());
@@ -384,7 +385,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
 
                     //client.player.getVehicle().lookAt(EntityAnchorArgumentType.EntityAnchor.EYES,client.player.getVehicle().getEyePos().add(vec3d.normalize()));
                 } else {
-                    if (player.isFallFlying()) {
+                    if (player.isGliding()) {
                         Mod.prevCrosshairTarget = Mod.crosshairTarget;
                     }
                     GameRenderer renderer = client.gameRenderer;
@@ -674,7 +675,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
 
 
             if (this.options.attackKey.isPressed()) {
-                mouseCooldown = 40 + (int) (0.2*20F / client.player.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED));
+                mouseCooldown = 40 + (int) (0.2*20F / client.player.getAttributeValue(EntityAttributes.ATTACK_SPEED));
             }
             if (client.player.isUsingItem() || (this.options.useKey.isPressed()) || spell) {
                 isUse = true;
@@ -698,10 +699,10 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
             ){
                 bool = true;
             }
-            if((originalLocation != null && location != null  && !(this.location instanceof EntityHitResult entityHitResult) && this.player.squaredDistanceTo(originalLocation) >= this.originalLocation.squaredDistanceTo(location.getPos())-0.5) || this.player.input.pressingBack ||
-                    this.player.input.pressingRight ||
-                    this.player.input.pressingLeft||
-                    this.player.input.pressingForward){
+            if((originalLocation != null && location != null  && !(this.location instanceof EntityHitResult entityHitResult) && this.player.squaredDistanceTo(originalLocation) >= this.originalLocation.squaredDistanceTo(location.getPos())-0.5) || this.player.input.playerInput.backward() ||
+                    this.player.input.playerInput.right() ||
+                    this.player.input.playerInput.left() ||
+                    this.player.input.playerInput.forward()){
 
                 this.location = null;
                 this.originalLocation = null;
@@ -758,7 +759,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
                                     disableTargeting = true;
                                     pickedTarget = null;
 
-                                    player.sendMessage(Text.translatable("Disabled Targeting"));
+                                    player.sendMessage(Text.translatable("Disabled Targeting"), false);
 
                                 }
                             }
@@ -766,7 +767,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
                                 disableTargeting = true;
                                 pickedTarget = null;
 
-                                player.sendMessage(Text.translatable("Disabled Targeting"));
+                                player.sendMessage(Text.translatable("Disabled Targeting"), false);
 
                             }
                         }
@@ -802,7 +803,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
 
             }
 
-            if (  (  (!Config.GSON.instance().turnToMouse &&     !player.isFallFlying()) && (
+            if (  (  (!Config.GSON.instance().turnToMouse &&     !player.isGliding()) && (
                        (!(bool ) && !using && mouseCooldown <= 0  && !(player.getMainHandStack().getItem() instanceof CrossbowItem item ) &&  client.player.input.getMovementInput().length() > 0.1)))) {
                 if(Mod.targeted != null){
                     EntityHitResult result = new EntityHitResult(targeted,targeted.getEyePos());
@@ -828,13 +829,13 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
                 GameRenderer renderer = client.gameRenderer;
                 Camera camera = renderer.getCamera();
                 float tickDelta = camera.getLastTickDelta();
-                if (      player.isFallFlying()){
+                if (      player.isGliding()){
                     Mod.prevCrosshairTarget = Mod.crosshairTarget;
                 }
                 if (targeted != null) {
 
 
-                    if (!player.isFallFlying()) {
+                    if (!player.isGliding()) {
 
                         lookAt(client.player,EntityAnchorArgumentType.EntityAnchor.EYES, new Vec3d(
                                 Mod.targeted.getPos().getX(),
@@ -853,7 +854,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
                     Mod.prevCrosshairTarget = Mod.crosshairTarget;
 
 
-                    if (!player.isFallFlying()) {
+                    if (!player.isGliding()) {
 
                         lookAt(client.player,EntityAnchorArgumentType.EntityAnchor.EYES, new Vec3d(
                                 MathHelper.lerp((Math.min(10, client.world.getTime() - lookingTime + tickDelta)) / 10D, Mod.prevCrosshairTarget.getPos().getX(), Mod.crosshairTarget.getPos().getX()),

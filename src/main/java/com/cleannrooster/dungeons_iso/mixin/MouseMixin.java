@@ -244,7 +244,7 @@ public class MouseMixin implements MouseAccessor {
                             .expand(1.0, 1.0, 1.0);
                     Vec3d end =                             (Config.GSON.instance().ortho ? camera.getPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getPos()).add(rayDir.multiply(renderer.getFarPlaneDistance()));
                     Vec3d vec3d5= camera.getProjection().getPosition(-2f*(float)(i-0.5)*(float)aspect,-2f*(float)(j-0.5));
-                    if(cameraEntity instanceof PlayerEntity player && player.isFallFlying()){
+                    if(cameraEntity instanceof PlayerEntity player && player.isGliding()){
 
 
                         if(((CameraAccessor)camera).getPosBeforeModulation() != null){
@@ -498,24 +498,12 @@ public class MouseMixin implements MouseAccessor {
 
 
 
-    @Redirect(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;scrollInHotbar(D)V"))
-
-
-    private void scrollInHotbarXIV(PlayerInventory instance, double scrollAmount) {
-
-            if (Mod.enabled && Config.GSON.instance().scrollWheelZoom ) {
-
-
-                Mod.zoom = (Math.clamp(Mod.zoom - (float) scrollAmount * 0.2f,2F/Math.clamp(Config.GSON.instance().zoomFactor,1F,1.5F),10.0F));
-
+    @Redirect(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;setSelectedSlot(I)V"))
+        private void scrollInHotbarXIV(PlayerInventory instance, int slot) {
+            if (Mod.enabled && Config.GSON.instance().scrollWheelZoom) {
             } else {
-
-                instance.scrollInHotbar(scrollAmount);
-
-
+                instance.setSelectedSlot(slot);
             }
-
-
         }
 
     @Override

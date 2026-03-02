@@ -38,8 +38,6 @@ import java.util.List;
 
 @Mixin(WorldRenderer.class)
 public abstract class WorldRendererMixin implements WorldRendererAccessor {
-    @Shadow
-    private double lastTranslucentSortX;
     private static Vec3d getMaxIntensityColorXIV(float hue) {
         float f = 5.99999F;
         int i = (int)(MathHelper.clamp(hue, 0.0F, 1.0F) * 5.99999F);
@@ -100,15 +98,11 @@ public abstract class WorldRendererMixin implements WorldRendererAccessor {
     }
 
     @Shadow
-    private double lastTranslucentSortY;
-    @Shadow
-    private double lastTranslucentSortZ;
-    @Shadow
     private  ObjectArrayList<ChunkBuilder.BuiltChunk> builtChunks;
 
 
     @Inject(method = "drawBlockOutline", at = @At("HEAD"),cancellable = true)
-    private void drawBlockOutlineXIV(MatrixStack matrices, VertexConsumer vertexConsumer, Entity entity, double cameraX, double cameraY, double cameraZ, BlockPos pos, BlockState state,CallbackInfo info) {
+    private void drawBlockOutlineXIV(MatrixStack matrices, VertexConsumer vertexConsumer, Entity entity, double cameraX, double cameraY, double cameraZ, BlockPos pos, BlockState state, int color, CallbackInfo info) {
         if(Mod.enabled && Mod.mouseTarget instanceof BlockHitResult blockHitResult ) {
             drawCuboidShapeOutlineXIV(matrices, vertexConsumer, state.getOutlineShape(MinecraftClient.getInstance().world, pos, ShapeContext.of(entity)), (double)blockHitResult.getBlockPos().getX() - cameraX, (double)blockHitResult.getBlockPos().getY() - cameraY, (double)blockHitResult.getBlockPos().getZ() - cameraZ, 0.0F, 0.0F, 0.0F, 0.4F);
             info.cancel();;
