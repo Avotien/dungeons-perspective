@@ -99,6 +99,7 @@ public abstract class CameraMixin implements CameraAccessor {
     )
     public void b(Args args) {
         if (Mod.enabled) {
+            this.setRotation(Mod.yaw, Mod.pitch); // ensure correct rotation before computing preMod
             if(ClientInit.isoBinding.wasPressed()){
                 this.setRotation((float) (Math.ceil(Mod.yaw / 90) * 90 - 45),  45);
 
@@ -120,9 +121,9 @@ public abstract class CameraMixin implements CameraAccessor {
             Vector3f vector3f = (new Vector3f(0, 0, (float)((float) args.get(0) * Mod.getZoom()))).rotate(MinecraftClient.getInstance().gameRenderer.getCamera().getRotation());
             Vec3d vec = (new Vec3d(this.pos.x + (double)vector3f.x, this.pos.y + (double)vector3f.y, this.pos.z + (double)vector3f.z));
             Mod.preMod = vec;
+
             BlockHitResult result = MinecraftClient.getInstance().cameraEntity.getWorld().raycast(new RaycastContext(MinecraftClient.getInstance().cameraEntity.getEyePos(), vec, RaycastContext.ShapeType.VISUAL, RaycastContext.FluidHandling.NONE, MinecraftClient.getInstance().cameraEntity));
             Mod.hit = this.area.raycast(new RaycastContext(this.focusedEntity.getEyePos(),vec, RaycastContext.ShapeType.VISUAL, RaycastContext.FluidHandling.NONE, this.focusedEntity));
-
             if (result.getType().equals(HitResult.Type.BLOCK) ) {
                 Mod.isBlocked = true;
                 Mod.shouldReload = true;
@@ -181,16 +182,11 @@ public abstract class CameraMixin implements CameraAccessor {
         }
     }
 
-    @Inject(
-            method = "clipToSpace",
-            at = @At(value = "HEAD"),
-            cancellable = true
-    )
+    @Inject(method = "clipToSpace", at = @At("HEAD"), cancellable = true)
     private void clipToSpaceXIV(float a, CallbackInfoReturnable<Float> callbackInfoReturnable) {
-
-        if (MinecraftClient.getInstance().gameRenderer.getCamera() instanceof Camera camera && Mod.enabled ) {
-
-                callbackInfoReturnable.setReturnValue(a);
+    if (MinecraftClient.getInstance().gameRenderer.getCamera() instanceof Camera && Mod.enabled) {
+        this.setRotation(Mod.yaw, Mod.pitch); // correct rotation BEFORE camera moves
+        callbackInfoReturnable.setReturnValue(a);
 
 
 

@@ -499,8 +499,9 @@ public class MouseMixin implements MouseAccessor {
 
 
     @Redirect(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;setSelectedSlot(I)V"))
-        private void scrollInHotbarXIV(PlayerInventory instance, int slot) {
+        private void scrollInHotbarXIV(PlayerInventory instance, int slot, @Local(ordinal = 1) double scrollAmount) {
             if (Mod.enabled && Config.GSON.instance().scrollWheelZoom) {
+                Mod.zoom = Math.clamp(Mod.zoom - (float) scrollAmount * 0.2f, 2F / Math.clamp(Config.GSON.instance().zoomFactor, 1F, 1.5F), 10.0F);
             } else {
                 instance.setSelectedSlot(slot);
             }
