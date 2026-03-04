@@ -33,7 +33,7 @@ public abstract class LivingEntityRendererMixin {
                 && player != null
                 && playerEntityRenderState.id == player.getId()
                 && camera.isThirdPerson()
-                && camera.getPos().distanceTo(player.getEyePos()) < 1.0) {
+                && camera.getCameraPos().distanceTo(player.getEyePos()) < 1.0) {
             // Same as spectator mode (ref. LivingEntityRenderer#getRenderLayer)
             vertices = vertexConsumerProvider.getBuffer(RenderLayer.getItemEntityTranslucentCull(player
                     .getSkinTextures()

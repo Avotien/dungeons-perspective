@@ -11,6 +11,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.MovementType;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -33,7 +34,8 @@ public abstract class KeyboardInputMixin extends Input {
     @Inject(
             method = "tick", at = @At("TAIL")
     )
-    private void movementXIV(boolean slowDown, float slowDownFactor, CallbackInfo ci) {
+    private void movementXIV(CallbackInfo ci) {
+        Vector2f movement = new Vector2f(this.movementVector.y, this.movementVector.x);
         if (Mod.enabled ) {
             if(FabricLoader.getInstance().isModLoaded("midnightcontrols") && Mod.noMouse && Mod.useTimer > 40){
                 if(MidnightControlsCompat.isEnabled()){
@@ -42,16 +44,15 @@ public abstract class KeyboardInputMixin extends Input {
             }
             MinecraftClient client = MinecraftClient.getInstance();
             assert client.player != null;
-            Vector2f movement = new Vector2f(this.movementForward, this.movementSideways);
 
-            float tickDelta = client.gameRenderer.getCamera().getLastTickDelta();
+            float tickDelta = client.gameRenderer.getCamera().getLastTickProgress();
 
             boolean bool = ((MinecraftClientAccessor)client).getLocation() instanceof EntityHitResult result && result.getEntity() instanceof ItemEntity;
             float yaw = client.gameRenderer.getCamera().getYaw() - client.player.getYaw(tickDelta);
             if((Config.GSON.instance().clickToMove || bool) &&  ((MinecraftClientAccessor)client).getOriginalLocation() != null  && ((MinecraftClientAccessor)client).getLocation() != null &&((MinecraftClientAccessor)client).getLocation().getPos() instanceof Vec3d vec3d
                     && client.player.squaredDistanceTo(((MinecraftClientAccessor)client).getOriginalLocation()) < (((MinecraftClientAccessor)client).getOriginalLocation()).squaredDistanceTo(((MinecraftClientAccessor)client).getLocation().getPos())-1) {
-                   if(((MinecraftClientAccessor)client).getLocation() instanceof EntityHitResult && ((MinecraftClientAccessor)client).getLocation().getPos().subtract(0,((MinecraftClientAccessor)client).getLocation().getPos().getY()-(client.player.getPos()).getY(),0)
-                           .squaredDistanceTo(client.player.getPos()) < (bool ? client.player.getWidth()/2 :(client.player.getEntityInteractionRange() * client.player.getEntityInteractionRange()/4))){
+                   if(((MinecraftClientAccessor)client).getLocation() instanceof EntityHitResult && ((MinecraftClientAccessor)client).getLocation().getPos().subtract(0,((MinecraftClientAccessor)client).getLocation().getPos().getY()-(client.player.getEntityPos()).getY(),0)
+                           .squaredDistanceTo(client.player.getEntityPos()) < (bool ? client.player.getWidth()/2 :(client.player.getEntityInteractionRange() * client.player.getEntityInteractionRange()/4))){
                        return;
                    }
                 if(((MinecraftClientAccessor)client).getLocation() instanceof BlockHitResult result && Mod.isInteractable(result)){
@@ -60,7 +61,7 @@ public abstract class KeyboardInputMixin extends Input {
                         var interact = client.interactionManager.interactBlock(client.player,Hand.MAIN_HAND, result);
 
                         if (interact.isAccepted()) {
-                            if (interact.shouldSwingHand()) {
+                            if (interact == ActionResult.SUCCESS) {
                                 client.player.swingHand(hand);
                             }
 
@@ -71,21 +72,19 @@ public abstract class KeyboardInputMixin extends Input {
                             ClientInit.clickToMove.setPressed(false);
                             return;
                         }
-                    }
-                    return;
+
                 }
                     movement = new Vector2f(1.0F, 0F);
-                   yaw = getAngle(new Vec3d(0, 0, 0), vec3d.subtract(client.player.getPos()).subtract(0, vec3d.subtract(client.player.getPos()).getY(), 0));
+                   yaw = getAngle(new Vec3d(0, 0, 0), vec3d.subtract(client.player.getEntityPos()).subtract(0, vec3d.subtract(client.player.getEntityPos()).getY(), 0));
 
                    movement.mul(new Matrix2f().rotate((float) Math.toRadians(yaw)));
                    movement.mul(new Matrix2f().rotate((float) Math.toRadians(+client.player.getYaw(tickDelta))));
                    Mod.unModMovement = new Vector2f(1.0F,0F).mul(new Matrix2f().rotate((float) Math.toRadians(+MinecraftClient.getInstance().gameRenderer.getCamera().getYaw())));
 
-                   this.movementForward = movement.x;
-                   this.movementSideways = movement.y;
-                   if(slowDown){
-                       this.movementForward *= slowDownFactor;
-                       this.movementSideways *= slowDownFactor;
+                    this.movementVector = new Vec2f(movement.y, movement.x);
+
+                    this.movementVector = new Vec2f(movement.y, movement.x);
+                    return;
 
                    }
 
@@ -93,8 +92,7 @@ public abstract class KeyboardInputMixin extends Input {
 
             }
             else{
-                movementForward=0;
-                movementSideways=0;
+                this.movementVector = Vec2f.ZERO;
             }
             if(Config.GSON.instance().cameraRelative) {
                 Mod.relativeYaw = yaw;
@@ -102,11 +100,10 @@ public abstract class KeyboardInputMixin extends Input {
             }
 
 
-            this.movementForward = movement.x;
-            this.movementSideways = movement.y;
+            this.movementVector = new Vec2f(movement.y, movement.x);
 
         }
-        if(this.pressingBack || this.pressingForward || this.pressingLeft || this.pressingRight){
+        if(this.playerInput.backward() || this.playerInput.forward() || this.playerInput.left() || this.playerInput.right()){
             Mod.useTimer = 0;
         }
         else{

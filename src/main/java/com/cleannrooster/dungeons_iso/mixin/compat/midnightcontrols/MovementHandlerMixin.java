@@ -1,5 +1,6 @@
 package com.cleannrooster.dungeons_iso.mixin.compat.midnightcontrols;
 
+import com.cleannrooster.dungeons_iso.mixin.InputAccessor;
 import com.cleannrooster.dungeons_iso.mod.Mod;
 import eu.midnightdust.midnightcontrols.client.MidnightControlsConfig;
 import eu.midnightdust.midnightcontrols.client.controller.ButtonBinding;
@@ -42,15 +43,14 @@ public class MovementHandlerMixin {
     @Inject(at = @At("HEAD"), method = "applyMovement", cancellable = true)
     public void applyMovementXIV(@NotNull ClientPlayerEntity player, CallbackInfo callbackInfo) {
         if (Mod.enabled && Mod.noMouse && Mod.useTimer > 40) {
-            float yaw = MinecraftClient.getInstance().gameRenderer.getCamera().getYaw() - player.getYaw(MinecraftClient.getInstance().gameRenderer.getCamera().getLastTickDelta());
+            float yaw = MinecraftClient.getInstance().gameRenderer.getCamera().getYaw() - player.getYaw(MinecraftClient.getInstance().gameRenderer.getCamera().getLastTickProgress());
 
             Vector2f vec2f = new Vector2f(movementForward,movementSideways);
             vec2f.mul(new Matrix2f().rotate((float) Math.toRadians(-yaw)));
 
             if(pressingForward || pressingBack || pressingLeft || pressingRight) {
 
-                player.input.movementForward = vec2f.x;
-                player.input.movementSideways = vec2f.y;
+            ((InputAccessor) player.input).setMovementVector(new Vec2f(vec2f.y, vec2f.x));
             }
             callbackInfo.cancel();
         }

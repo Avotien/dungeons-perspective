@@ -4,7 +4,7 @@ import com.cleannrooster.dungeons_iso.api.MinecraftClientAccessor;
 import com.cleannrooster.dungeons_iso.mod.Mod;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.ChunkBuildBuffers;
 import net.caffeinemc.mods.sodium.client.render.chunk.translucent_sorting.TranslucentGeometryCollector;
-import net.caffeinemc.mods.sodium.client.render.frapi.render.AbstractBlockRenderContext;
+import net.caffeinemc.mods.sodium.client.render.model.AbstractBlockRenderContext;
 import net.caffeinemc.mods.sodium.client.world.LevelSlice;
 import net.caffeinemc.mods.sodium.fabric.render.FluidRendererImpl;
 import net.minecraft.block.BlockState;
@@ -31,7 +31,7 @@ public abstract class FluidRendererMixin {
    /* @Inject(at = @At("HEAD"), method = "render", cancellable = true)
     public void renderXIV(LevelSlice level, BlockState blockState, FluidState fluidState, BlockPos pos, BlockPos offset, TranslucentGeometryCollector collector, ChunkBuildBuffers buffers, CallbackInfo ci) {
         if(MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player instanceof ClientPlayerEntity player && Mod.enabled && ((MinecraftClientAccessor)MinecraftClient.getInstance()).shouldRebuild()) {
-            Box box = new Box(player.getEyePos(),MinecraftClient.getInstance().gameRenderer.getCamera().getPos());
+            Box box = new Box(player.getEyePos(),MinecraftClient.getInstance().gameRenderer.getCamera().getCameraPos());
 
             *//*if((pos.getX() < box.maxX && pos.getX() > box.minX-1)
                     && (pos.getY() < box.maxY && pos.getY() > box.minY)
@@ -39,19 +39,19 @@ public abstract class FluidRendererMixin {
             ){*//*
             if(MinecraftClient.getInstance().gameRenderer.getCamera() instanceof Camera camera  &&(
 
-              *//*               (((float)MinecraftClient.getInstance().cameraEntity.getEyePos().subtract((pos.toCenterPos())).normalize().dotProduct((MinecraftClient.getInstance().cameraEntity.getEyePos()).subtract(camera.getPos()).normalize()) > 0.71F || camera.getPos().distanceTo(pos.toCenterPos()) < 3) &&
+              *//*               (((float)MinecraftClient.getInstance().cameraEntity.getEyePos().subtract((pos.toCenterPos())).normalize().dotProduct((MinecraftClient.getInstance().cameraEntity.getEyePos()).subtract(camera.getCameraPos()).normalize()) > 0.71F || camera.getCameraPos().distanceTo(pos.toCenterPos()) < 3) &&
 
-                             (Math.abs((float)MinecraftClient.getInstance().cameraEntity.getEyePos().subtract(camera.getPos()).normalize().dotProduct(pos.toCenterPos().subtract( camera.getPos()).normalize())) >= 0.9F || camera.getPos().distanceTo(pos.toCenterPos()) < 3)) &&
-                             ((float)MinecraftClient.getInstance().cameraEntity.getPos().subtract(pos.toCenterPos()).normalize().dotProduct(new Vec3d(0,-1,0)) > 0.3F)))  ||
+                             (Math.abs((float)MinecraftClient.getInstance().cameraEntity.getEyePos().subtract(camera.getCameraPos()).normalize().dotProduct(pos.toCenterPos().subtract( camera.getCameraPos()).normalize())) >= 0.9F || camera.getCameraPos().distanceTo(pos.toCenterPos()) < 3)) &&
+                             ((float)MinecraftClient.getInstance().cameraEntity.getEntityPos().subtract(pos.toCenterPos()).normalize().dotProduct(new Vec3d(0,-1,0)) > 0.3F)))  ||
 *//*
 *//*
                             Objects.equals(pos, BlockPos.ofFloored(player.getX(), (int) player.getBoundingBox().getMax(Direction.Axis.Y), player.getZ())) || Objects.equals(pos, BlockPos.ofFloored(player.getX(), (int) player.getBoundingBox().getMax(Direction.Axis.Y)+1, player.getZ())) ||
 *//*
-                    ((int)Math.abs(MinecraftClient.getInstance().cameraEntity.getPos().subtract((pos.toCenterPos())).normalize().multiply(1,1,1).dotProduct((MinecraftClient.getInstance().cameraEntity.getPos()).subtract(camera.getPos()).normalize().multiply(8,8,8))) >= (int)(0.8*8) && pos.toCenterPos().getY() > player.getY()+1)
+                    ((int)Math.abs(MinecraftClient.getInstance().cameraEntity.getEntityPos().subtract((pos.toCenterPos())).normalize().multiply(1,1,1).dotProduct((MinecraftClient.getInstance().cameraEntity.getEntityPos()).subtract(camera.getCameraPos()).normalize().multiply(8,8,8))) >= (int)(0.8*8) && pos.toCenterPos().getY() > player.getY()+1)
 
-*//*            ((MinecraftClient.getInstance().cameraEntity.getPos().subtract((pos.toCenterPos())).normalize().dotProduct((MinecraftClient.getInstance().cameraEntity.getPos()).subtract(camera.getPos()).normalize()) > 0.5 && pos.toCenterPos().getY() > player.getY()+1) )*//*
+*//*            ((MinecraftClient.getInstance().cameraEntity.getEntityPos().subtract((pos.toCenterPos())).normalize().dotProduct((MinecraftClient.getInstance().cameraEntity.getEntityPos()).subtract(camera.getCameraPos()).normalize()) > 0.5 && pos.toCenterPos().getY() > player.getY()+1) )*//*
 
-                                     //(MinecraftClient.getInstance().cameraEntity.getEyePos().subtract((blockInfo.blockPos.toCenterPos())).normalize().dotProduct((MinecraftClient.getInstance().cameraEntity.getEyePos()).subtract(camera.getPos()).normalize()) > 0.7071 || camera.getPos().distanceTo(blockInfo.blockPos.toCenterPos()) < 3)
+                                     //(MinecraftClient.getInstance().cameraEntity.getEyePos().subtract((blockInfo.blockPos.toCenterPos())).normalize().dotProduct((MinecraftClient.getInstance().cameraEntity.getEyePos()).subtract(camera.getCameraPos()).normalize()) > 0.7071 || camera.getCameraPos().distanceTo(blockInfo.blockPos.toCenterPos()) < 3)
 
 
 

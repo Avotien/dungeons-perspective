@@ -32,11 +32,11 @@ public class SodiumCompat {
 
 
     public static void run(){
-        Box box = new Box(MinecraftClient.getInstance().player.getEyePos(),MinecraftClient.getInstance().gameRenderer.getCamera().getPos()).expand(1,0,1);
-        if(MinecraftClient.getInstance().cameraEntity!= null) {
-            stream = floodCuller.getCulledBlocks(MinecraftClient.getInstance().player.getBlockPos().up(), MinecraftClient.getInstance().gameRenderer.getCamera(), MinecraftClient.getInstance().cameraEntity);
+        Box box = new Box(MinecraftClient.getInstance().player.getEyePos(),MinecraftClient.getInstance().gameRenderer.getCamera().getCameraPos()).expand(1,0,1);
+        if(MinecraftClient.getInstance().getCameraEntity()!= null) {
+            stream = floodCuller.getCulledBlocks(MinecraftClient.getInstance().player.getBlockPos().up(), MinecraftClient.getInstance().gameRenderer.getCamera(), MinecraftClient.getInstance().getCameraEntity());
         }
-        double dub = 1*MinecraftClient.getInstance().player.getPos().distanceTo(MinecraftClient.getInstance().gameRenderer.getCamera().getPos());
+        double dub = 1*MinecraftClient.getInstance().player.getEntityPos().distanceTo(MinecraftClient.getInstance().gameRenderer.getCamera().getCameraPos());
         box.stretch(dub,dub,dub);
         SodiumWorldRenderer.instance().scheduleRebuildForBlockArea((int) box.minX, (int) box.minY, (int) box.minZ, (int) box.maxX, (int) box.maxY, (int) box.maxZ, true);
 

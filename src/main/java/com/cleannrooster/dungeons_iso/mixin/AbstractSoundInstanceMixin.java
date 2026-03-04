@@ -52,7 +52,7 @@ public class AbstractSoundInstanceMixin {
         AbstractSoundInstance instance = (AbstractSoundInstance) (Object) this;
 
         if(!this.relative && MinecraftClient.getInstance().gameRenderer != null && MinecraftClient.getInstance().gameRenderer.getCamera() instanceof Camera camera && Mod.enabled && cir.getReturnValue() != null){
-            cir.setReturnValue((float) (cir.getReturnValue()*(1+Mod.zoom)*Math.max(0,1-MinecraftClient.getInstance().player.getPos().distanceTo(new Vec3d(instance.getX(),instance.getY(),instance.getZ()))/16F)));
+            cir.setReturnValue((float) (cir.getReturnValue()*(1+Mod.zoom)*Math.max(0,1-MinecraftClient.getInstance().player.getEntityPos().distanceTo(new Vec3d(instance.getX(),instance.getY(),instance.getZ()))/16F)));
 
         }
     }
@@ -66,11 +66,11 @@ public class AbstractSoundInstanceMixin {
         if( MinecraftClient.getInstance().gameRenderer.getCamera() instanceof Camera camera && MinecraftClient.getInstance().cameraEntity instanceof Entity entity    && MinecraftClient.getInstance().cameraEntity.squaredDistanceTo(x,y,z) < 16* 16) {
             if (Mod.enabled && ci.getReturnValue() != null) {
                 if(!this.relative) {
-                    ci.setReturnValue((double) camera.getPos().getX() + x - entity.getEyePos().getX());
+                    ci.setReturnValue((double) camera.getCameraPos().getX() + x - entity.getEyePos().getX());
 
                 }
                 else{
-                    ci.setReturnValue(camera.getPos().getX());
+                    ci.setReturnValue(camera.getCameraPos().getX());
                 }
 
             }
@@ -86,10 +86,10 @@ public class AbstractSoundInstanceMixin {
             if (Mod.enabled && ci.getReturnValue() != null) {
                 if(!this.relative) {
 
-                ci.setReturnValue((double)camera.getPos().getY()+y-entity.getEyePos().getY());
+                ci.setReturnValue((double)camera.getCameraPos().getY()+y-entity.getEyePos().getY());
                 }
                 else{
-                    ci.setReturnValue(camera.getPos().getY());
+                    ci.setReturnValue(camera.getCameraPos().getY());
                 }
 
             }
@@ -105,10 +105,10 @@ public class AbstractSoundInstanceMixin {
             if (Mod.enabled && ci.getReturnValue() != null) {
                 if(!this.relative) {
 
-                ci.setReturnValue((double)camera.getPos().getZ()+z-entity.getEyePos().getZ());
+                ci.setReturnValue((double)camera.getCameraPos().getZ()+z-entity.getEyePos().getZ());
             }
             else{
-                ci.setReturnValue(camera.getPos().getZ());
+                ci.setReturnValue(camera.getCameraPos().getZ());
             }
 
             }

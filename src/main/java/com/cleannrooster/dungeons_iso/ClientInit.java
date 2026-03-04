@@ -19,7 +19,9 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.command.DefaultPermissions;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.shape.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -69,7 +71,7 @@ public class ClientInit implements ClientModInitializer {
     public static boolean canChangeCapabilities() {
         MinecraftClient client = MinecraftClient.getInstance();
         // We need to have received capabilities from the server already, and have adequate permissions to change them
-        return serverSupportsCapabilities() && client.player != null && client.player.hasPermissionLevel(2);
+        return serverSupportsCapabilities() && client.player != null && client.player.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS);
     }
 
     public static Capabilities getCapabilities() {
@@ -106,97 +108,98 @@ public class ClientInit implements ClientModInitializer {
         instance = this;
         Config.GSON.load();
 
+        KeyBinding.Category dungeonCategory = KeyBinding.Category.create(Identifier.of("dungeons_iso", "binds.category"));
         KeyBindingHelper.registerKeyBinding(toggleBinding = new KeyBinding(
                 "dungeons_iso.binds.toggle",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_F4,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(isoBinding = new KeyBinding(
                 "dungeons_iso.binds.iso",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_HOME,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(moveCameraBinding = new KeyBinding(
                 "dungeons_iso.binds.moveCamera",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_MOUSE_BUTTON_3,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
 
         KeyBindingHelper.registerKeyBinding(lockOn = new KeyBinding(
                 "dungeons_iso.binds.lockOn",
                 InputUtil.Type.MOUSE,
                 GLFW.GLFW_KEY_H,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(verticalBinding = new KeyBinding(
                 "dungeons_iso.binds.verticalBinding",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_ALT,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(clickToMove = new KeyBinding(
                 "dungeons_iso.binds.clickToMove",
                 InputUtil.Type.MOUSE,
                 InputUtil.UNKNOWN_KEY.getCode(),
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(zoomInBinding = new KeyBinding(
                 "dungeons_iso.binds.zoomIn",
                 InputUtil.Type.MOUSE,
                 GLFW.GLFW_KEY_UP,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(zoomOutBinding = new KeyBinding(
                 "dungeons_iso.binds.zoomOut",
                 InputUtil.Type.MOUSE,
                 GLFW.GLFW_KEY_DOWN,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(rotateToggle = new KeyBinding(
                 "dungeons_iso.binds.rotateToggle",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_DELETE,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(rotateClockwise = new KeyBinding(
                 "dungeons_iso.binds.rotateClockwise",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(interact = new KeyBinding(
                 "dungeons_iso.binds.interact",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_G,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(rotateCounterClockwise = new KeyBinding(
                 "dungeons_iso.binds.rotateCounterClockwise",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_LEFT,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(contextToggleBinding = new KeyBinding(
                 "dungeons_iso.binds.dynCameraToggle",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_END,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
         KeyBindingHelper.registerKeyBinding(cycleTargetBinding = new KeyBinding(
                 "dungeons_iso.binds.cycleTargetBinding",
                 InputUtil.Type.MOUSE,
                 GLFW.GLFW_MOUSE_BUTTON_4,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
 
         KeyBindingHelper.registerKeyBinding(openLootMenu = new KeyBinding(
                 "dungeons_iso.binds.openLootMenu",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_Z,
-                "dungeons_iso.binds.category"
+                dungeonCategory
         ));
 
         // Client side stuff
@@ -216,14 +219,14 @@ public class ClientInit implements ClientModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> capabilities = Capabilities.none());
 
         ServerPlayConnectionEvents.JOIN.register((networkHandler, packetSender, minecraftServer) -> {
-            if (networkHandler.player.hasPermissionLevel(2)) {
+            if (networkHandler.player.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS)) {
                 capabilities = Capabilities.load();
             }
             packetSender.sendPacket(capabilities);
         });
 
         ServerPlayNetworking.registerGlobalReceiver(Capabilities.ID, (payload, context) -> {
-            if (!context.player().hasPermissionLevel(2)) {
+            if (!context.player().getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS)) {
                 return;
             }
 
@@ -242,7 +245,7 @@ public class ClientInit implements ClientModInitializer {
         });
        /* WorldRenderEvents.BLOCK_OUTLINE.register(((worldRenderContext, blockOutlineContext) -> {
             if(Mod.enabled && Mod.crosshairTarget  instanceof BlockHitResult && blockOutlineContext.blockPos().equals(((BlockHitResult) Mod.crosshairTarget).getBlockPos())){
-                drawCuboidShapeOutline(worldRenderContext.matrixStack(),worldRenderContext.consumers().getBuffer(RenderLayer.getSolid()), VoxelShapes.cuboid(new Box(blockOutlineContext.blockPos()).expand(0.7)), (double)blockOutlineContext.blockPos().getX() - worldRenderContext.camera().getPos().getX(), (double)blockOutlineContext.blockPos().getY() - worldRenderContext.camera().getPos().getY(), (double)blockOutlineContext.blockPos().getZ() - worldRenderContext.camera().getPos().getZ(), 0.0F, 0.0F, 0.0F, 0.4F);
+                drawCuboidShapeOutline(worldRenderContext.matrixStack(),worldRenderContext.consumers().getBuffer(RenderLayer.getSolid()), VoxelShapes.cuboid(new Box(blockOutlineContext.blockPos()).expand(0.7)), (double)blockOutlineContext.blockPos().getX() - worldRenderContext.camera().getEntityPos().getX(), (double)blockOutlineContext.blockPos().getY() - worldRenderContext.camera().getEntityPos().getY(), (double)blockOutlineContext.blockPos().getZ() - worldRenderContext.camera().getEntityPos().getZ(), 0.0F, 0.0F, 0.0F, 0.4F);
             }
             return true;
         }));*/

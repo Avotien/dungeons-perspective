@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.command.DefaultPermissions;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.io.IOException;
@@ -24,7 +25,7 @@ public class ServerInit implements DedicatedServerModInitializer {
         });
 
         ServerPlayNetworking.registerGlobalReceiver(Capabilities.ID, (payload, context) -> {
-            if (!context.player().hasPermissionLevel(2)) {
+            if (!context.player().getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS)) {
                 return;
             }
 

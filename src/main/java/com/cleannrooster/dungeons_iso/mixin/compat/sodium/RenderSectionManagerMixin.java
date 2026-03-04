@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
-import net.caffeinemc.mods.sodium.client.render.chunk.lists.VisibleChunkCollector;
+// import net.caffeinemc.mods.sodium.client.render.chunk.lists.VisibleChunkCollector;
 import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
 import net.caffeinemc.mods.sodium.client.render.viewport.frustum.Frustum;
 import net.caffeinemc.mods.sodium.client.render.viewport.frustum.SimpleFrustum;
@@ -18,6 +18,7 @@ import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import org.joml.FrustumIntersection;
 import org.joml.Vector3d;
+import org.joml.Vector3dc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,21 +29,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(RenderSectionManager.class)
 public abstract class RenderSectionManagerMixin {
     @Shadow
-    private @Nullable BlockPos cameraBlockPos;
+    private @Nullable Vector3dc cameraPosition;
 
 
 
     @Inject(at = @At("HEAD"), method = "shouldPrioritizeTask", cancellable = true,remap = false)
 
     private void shouldPrioritizeTaskXIV(RenderSection section, float distance,CallbackInfoReturnable<Boolean> cir) {
-        if(Mod.enabled && cameraBlockPos != null &&  MinecraftClient.getInstance().player != null) {
-            cir.setReturnValue(section.getSquaredDistance(cameraBlockPos) < 64*64);
-
+        if(Mod.enabled && cameraPosition != null && MinecraftClient.getInstance().player != null) {
+        BlockPos cameraBlockPos = BlockPos.ofFloored(cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
+        cir.setReturnValue(section.getSquaredDistance(cameraBlockPos) < 64*64);
         }
     }
     @ModifyArg(at = @At(value = "INVOKE", target = "findVisible"), method = "createTerrainRenderList", remap = false, index = 1)
     private Viewport adjViewport(Viewport viewport) {
-        Vec3d vec = MinecraftClient.getInstance().gameRenderer.getCamera().getPos();
+        Vec3d vec = MinecraftClient.getInstance().gameRenderer.getCamera().getCameraPos();
         return new Viewport(new SimpleFrustum(new FrustumIntersection()),new Vector3d(vec.getX(),vec.getY(),vec.getZ()));
 
     }

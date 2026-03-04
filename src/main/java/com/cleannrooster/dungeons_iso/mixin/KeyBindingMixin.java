@@ -46,7 +46,7 @@ public class KeyBindingMixin {
             if (ClientInit.interact.isPressed()) {
 
                 cir.setReturnValue(true);
-            } else if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().options.hotbarKeys[MinecraftClient.getInstance().player.getInventory().selectedSlot].isPressed()) {
+            } else if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().options.hotbarKeys[MinecraftClient.getInstance().player.getInventory().getSelectedSlot()].isPressed()) {
                 if (Mod.cooldownWas > 4) {
 
                     cir.setReturnValue(true);
@@ -82,7 +82,7 @@ public class KeyBindingMixin {
                 cir.setReturnValue(true);
                 return;
 
-            } else if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().options.hotbarKeys[MinecraftClient.getInstance().player.getInventory().selectedSlot].wasPressed()) {
+            } else if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().options.hotbarKeys[MinecraftClient.getInstance().player.getInventory().getSelectedSlot()].wasPressed()) {
                 if (Mod.cooldownWas > 4) {
                     cir.setReturnValue(true);
                 }

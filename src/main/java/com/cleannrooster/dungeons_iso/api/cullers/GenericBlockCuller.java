@@ -68,13 +68,13 @@ public class GenericBlockCuller implements BlockCuller {
     public boolean shouldCull(BlockPos blockPos, Camera camera, Entity cameraEntity){
         if(  camera != null && cameraEntity != null) {
 
-            if (!(isIgnoredType(cameraEntity.getWorld().getBlockState(blockPos).getBlock())) && blockPos != null && blockPos.toCenterPos().getY() > cameraEntity.getPos().getY() + 1 &&
-                    (cameraEntity.getPos().subtract((blockPos.toCenterPos())).normalize()
+            if (!(isIgnoredType(cameraEntity.getEntityWorld().getBlockState(blockPos).getBlock())) && blockPos != null && blockPos.toCenterPos().getY() > cameraEntity.getEntityPos().getY() + 1 &&
+                    (cameraEntity.getEntityPos().subtract((blockPos.toCenterPos())).normalize()
                             .dotProduct(
-                                    (MinecraftClient.getInstance().cameraEntity.getPos()).subtract(camera.getPos()).normalize()) > 0.71
+                                    (MinecraftClient.getInstance().getCameraEntity().getEntityPos()).subtract(camera.getCameraPos()).normalize()) > 0.71
                             ||
-                            camera.getPos().distanceTo(blockPos.toCenterPos()) < 3)) {
-                return !cameraEntity.getWorld().getBlockState(blockPos).getBlock().equals(Blocks.AIR);
+                            camera.getCameraPos().distanceTo(blockPos.toCenterPos()) < 3)) {
+                return !cameraEntity.getEntityWorld().getBlockState(blockPos).getBlock().equals(Blocks.AIR);
             }
             else{
                 return false;
@@ -87,9 +87,9 @@ public class GenericBlockCuller implements BlockCuller {
 
     @Override
     public boolean shouldIgnoreBlockPick(BlockPos blockPos, Camera camera, Entity cameraEntity) {
-        if(!(isIgnoredType(cameraEntity.getWorld().getBlockState(blockPos).getBlock())) && blockPos != null && (cameraEntity instanceof PlayerEntity player && blockPos.toCenterPos().distanceTo(cameraEntity.getEyePos()) > player.getBlockInteractionRange())
+        if(!(isIgnoredType(cameraEntity.getEntityWorld().getBlockState(blockPos).getBlock())) && blockPos != null && (cameraEntity instanceof PlayerEntity player && blockPos.toCenterPos().distanceTo(cameraEntity.getEyePos()) > player.getBlockInteractionRange())
                 && blockPos.toCenterPos().getY() > cameraEntity.getY()+1){
-            if(new Vec3d(0,1,0).dotProduct(blockPos.toCenterPos().subtract(cameraEntity.getPos()).normalize())>0.5F) {
+            if(new Vec3d(0,1,0).dotProduct(blockPos.toCenterPos().subtract(cameraEntity.getEntityPos()).normalize())>0.5F) {
                 return true;
             }
         }

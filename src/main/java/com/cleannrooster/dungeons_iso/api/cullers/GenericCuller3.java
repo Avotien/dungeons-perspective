@@ -83,7 +83,7 @@ public class GenericCuller3 implements BlockCuller {
             List<Vec3d> vec3ds = new ArrayList<>();
 
 
-            var posBehindPlayerUp = fromPos.toCenterPos().subtract(getRotationVec(cameraEntity,camera.getLastTickDelta()).multiply(-4)).add(0,blockPos.getY()-fromPos.toCenterPos().getY(),0) ;
+            var posBehindPlayerUp = fromPos.toCenterPos().subtract(getRotationVec(cameraEntity,camera.getLastTickProgress()).multiply(-4)).add(0,blockPos.getY()-fromPos.toCenterPos().getY(),0) ;
             var vec7 = (blockPos.toCenterPos().subtract(Mod.preMod).normalize()) ;
             var vec8 = fromPos.toCenterPos().subtract(Mod.preMod).normalize();
             var vec1 = blockPos.toCenterPos().subtract(fromPos.toCenterPos()).normalize();
@@ -93,10 +93,10 @@ public class GenericCuller3 implements BlockCuller {
             var theta =angleBetween(vec8, vec7)  ;
             var phi =angleBetween(vec1,  vec2)  ;
             var chi =angleBetween(vec6,  new Vec3d(0,1,0))  ;
-            var factor = 0.1*(Math.min(10,Math.min(cameraEntity.getWorld().getTime()-Mod.startTime+2,10-Mod.endTime)))*90;
-            var factor2 = 0.1*(Math.min(10,Math.min(cameraEntity.getWorld().getTime()-Mod.startTime+2,10-Mod.endTime)))*45*Math.pow(0.9,Mod.zoom);
+            var factor = 0.1*(Math.min(10,Math.min(cameraEntity.getEntityWorld().getTime()-Mod.startTime+2,10-Mod.endTime)))*90;
+            var factor2 = 0.1*(Math.min(10,Math.min(cameraEntity.getEntityWorld().getTime()-Mod.startTime+2,10-Mod.endTime)))*45*Math.pow(0.9,Mod.zoom);
 
-            if(!isIgnoredType(cameraEntity.getWorld().getBlockState(blockPos).getBlock()) && blockPos.toCenterPos().getY() > fromPos.toCenterPos().getY() &&
+            if(!isIgnoredType(cameraEntity.getEntityWorld().getBlockState(blockPos).getBlock()) && blockPos.toCenterPos().getY() > fromPos.toCenterPos().getY() &&
                     (((  theta < factor  )  && phi < 90F-Mod.pitch ) ||(  Mod.preMod.distanceTo(blockPos.toCenterPos()) < 5))){
                 return true;
             }
@@ -114,20 +114,20 @@ public class GenericCuller3 implements BlockCuller {
             List<Vec3d> vec3ds = new ArrayList<>();
 
 
-        var posBehindPlayerUp = cameraEntity.getEyePos().subtract(getRotationVec(cameraEntity,camera.getLastTickDelta()).multiply(-4)).add(0,blockPos.getY()-cameraEntity.getEyeY(),0) ;
+        var posBehindPlayerUp = cameraEntity.getEyePos().subtract(getRotationVec(cameraEntity,camera.getLastTickProgress()).multiply(-4)).add(0,blockPos.getY()-cameraEntity.getEyeY(),0) ;
             var vec7 = (blockPos.toCenterPos().subtract(Mod.preMod).normalize()) ;
-            var vec8 = cameraEntity.getPos().subtract(Mod.preMod).normalize();
-        var vec1 = blockPos.toCenterPos().subtract(cameraEntity.getPos()).normalize();
+            var vec8 = cameraEntity.getEntityPos().subtract(Mod.preMod).normalize();
+        var vec1 = blockPos.toCenterPos().subtract(cameraEntity.getEntityPos()).normalize();
         var vec4 = blockPos.toCenterPos().subtract(Mod.preMod).normalize().multiply(-1);
-        var vec6 = blockPos.toCenterPos().subtract(cameraEntity.getPos()).normalize();
-        var vec2 = Mod.preMod.subtract(cameraEntity.getPos()).normalize();
+        var vec6 = blockPos.toCenterPos().subtract(cameraEntity.getEntityPos()).normalize();
+        var vec2 = Mod.preMod.subtract(cameraEntity.getEntityPos()).normalize();
         var theta =angleBetween(vec8, vec7)  ;
         var phi =angleBetween(vec1,  vec2)  ;
         var chi =angleBetween(vec6,  new Vec3d(0,1,0))  ;
-        var factor = 0.1*(Math.min(10,Math.min(cameraEntity.getWorld().getTime()-Mod.startTime+2,10-Mod.endTime)))*45;
-        var factor2 = 0.1*(Math.min(10,Math.min(cameraEntity.getWorld().getTime()-Mod.startTime+2,10-Mod.endTime)))*45*Math.pow(0.9,Mod.zoom);
+        var factor = 0.1*(Math.min(10,Math.min(cameraEntity.getEntityWorld().getTime()-Mod.startTime+2,10-Mod.endTime)))*45;
+        var factor2 = 0.1*(Math.min(10,Math.min(cameraEntity.getEntityWorld().getTime()-Mod.startTime+2,10-Mod.endTime)))*45*Math.pow(0.9,Mod.zoom);
 
-        if(!isIgnoredType(cameraEntity.getWorld().getBlockState(blockPos).getBlock()) && blockPos.toCenterPos().getY() > cameraEntity.getPos().getY() + 1 &&
+        if(!isIgnoredType(cameraEntity.getEntityWorld().getBlockState(blockPos).getBlock()) && blockPos.toCenterPos().getY() > cameraEntity.getEntityPos().getY() + 1 &&
                 (((  theta < factor  )  && phi < 45 ) ||(  Mod.preMod.distanceTo(blockPos.toCenterPos()) < 5))){
             return true;
         }
@@ -202,9 +202,9 @@ public class GenericCuller3 implements BlockCuller {
     }
     @Override
     public boolean shouldIgnoreBlockPick(BlockPos blockPos, Camera camera, Entity cameraEntity) {
-        if(!(isIgnoredType(cameraEntity.getWorld().getBlockState(blockPos).getBlock())) && blockPos != null && (cameraEntity instanceof PlayerEntity player && blockPos.toCenterPos().distanceTo(cameraEntity.getEyePos()) > player.getBlockInteractionRange())
+        if(!(isIgnoredType(cameraEntity.getEntityWorld().getBlockState(blockPos).getBlock())) && blockPos != null && (cameraEntity instanceof PlayerEntity player && blockPos.toCenterPos().distanceTo(cameraEntity.getEyePos()) > player.getBlockInteractionRange())
                 && blockPos.toCenterPos().getY() > cameraEntity.getY()+1){
-            if(new Vec3d(0,1,0).dotProduct(blockPos.toCenterPos().subtract(cameraEntity.getPos()).normalize())>0.5F) {
+            if(new Vec3d(0,1,0).dotProduct(blockPos.toCenterPos().subtract(cameraEntity.getEntityPos()).normalize())>0.5F) {
                 return true;
             }
         }

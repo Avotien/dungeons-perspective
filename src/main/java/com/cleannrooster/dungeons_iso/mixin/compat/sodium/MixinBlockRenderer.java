@@ -16,14 +16,14 @@ import net.caffeinemc.mods.sodium.client.model.quad.blender.BlendedColorProvider
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.material.DefaultMaterials;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.material.Material;
-import net.caffeinemc.mods.sodium.client.render.frapi.mesh.MutableQuadViewImpl;
-import net.caffeinemc.mods.sodium.client.render.frapi.render.AbstractBlockRenderContext;
+import net.caffeinemc.mods.sodium.client.render.model.MutableQuadViewImpl;
+import net.caffeinemc.mods.sodium.client.render.model.AbstractBlockRenderContext;
 import net.caffeinemc.mods.sodium.client.services.PlatformModelAccess;
 import net.caffeinemc.mods.sodium.client.services.SodiumModelData;
 import net.caffeinemc.mods.sodium.client.world.LevelSlice;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.renderer.v1.material.ShadeMode;
-import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.renderer.v1.mesh.ShadeMode;
+// import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
 import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -33,7 +33,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderLayers;
-import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BlockStateModel;
 import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.tag.BiomeTags;
@@ -92,16 +92,16 @@ private  Vector3f posOffset ;
         }
 
         protected int getColor(LevelSlice slice, BlockState state, BlockPos pos) {
-            if (SodiumCompat.blockCullers.stream().anyMatch(blockCuller -> blockCuller.shouldCull(pos,MinecraftClient.getInstance().gameRenderer.getCamera(),MinecraftClient.getInstance().cameraEntity))) {
+            if (SodiumCompat.blockCullers.stream().anyMatch(blockCuller -> blockCuller.shouldCull(pos,MinecraftClient.getInstance().gameRenderer.getCamera(),MinecraftClient.getInstance().getCameraEntity()))) {
 
-                return ColorHelper.Argb.getArgb((int) (255 * (1 - 1)), 0, 0,0);
+                return ColorHelper.getArgb((int) (255 * (1 - 1)), 0, 0,0);
 
             }
-            return ColorHelper.Argb.getArgb((int) 255,255,255);
+            return ColorHelper.getArgb((int) 255,255,255);
         }
 
         @Override
-        public void getColors(LevelSlice levelSlice, BlockPos blockPos, BlockPos.Mutable mutable, BlockState blockState, ModelQuadView modelQuadView, int[] ints) {
+        public void getColors(LevelSlice levelSlice, BlockPos blockPos, BlockPos.Mutable mutable, BlockState blockState, ModelQuadView modelQuadView, int[] ints, boolean bool2) {
             Arrays.fill(ints, -16777216 | this.getColor(levelSlice, blockState, blockPos));
 
         }
@@ -109,18 +109,18 @@ private  Vector3f posOffset ;
 
     @Inject(at = @At("HEAD"), method = "renderModel", cancellable = true,remap = false)
 
-    public void renderModelXIVCOLORPROVIDER(BakedModel model, BlockState state, BlockPos pos, BlockPos origin, CallbackInfo ci) {
+    public void renderModelXIVCOLORPROVIDER(BlockStateModel model, BlockState state, BlockPos pos, BlockPos origin, CallbackInfo ci) {
         try {
-            if (Mod.enabled && MinecraftClient.getInstance().cameraEntity != null && MinecraftClient.getInstance().gameRenderer != null && MinecraftClient.getInstance().cameraEntity.getWorld() != null) {
+            if (Mod.enabled && MinecraftClient.getInstance().getCameraEntity() != null && MinecraftClient.getInstance().gameRenderer != null && MinecraftClient.getInstance().getCameraEntity().getEntityWorld() != null) {
 
 
                 boolean bool = false;
                 for (BlockCuller culler : SodiumCompat.blockCullers) {
                     if(culler instanceof FloodCuller floodCuller &&((culler.shouldForceCull() && !bool) || (bool && culler.shouldForceNonCull()))){
-                        bool = floodCuller.isAboveFlood(pos, MinecraftClient.getInstance().gameRenderer.getCamera(), MinecraftClient.getInstance().cameraEntity, SodiumCompat.stream.stream());
+                        bool = floodCuller.isAboveFlood(pos, MinecraftClient.getInstance().gameRenderer.getCamera(), MinecraftClient.getInstance().getCameraEntity(), SodiumCompat.stream.stream());
                     }
                     else if ((culler.shouldForceCull() && !bool) || (bool && culler.shouldForceNonCull())) {
-                        bool = culler.shouldCull(pos, MinecraftClient.getInstance().gameRenderer.getCamera(), MinecraftClient.getInstance().cameraEntity);
+                        bool = culler.shouldCull(pos, MinecraftClient.getInstance().gameRenderer.getCamera(), MinecraftClient.getInstance().getCameraEntity());
                     }
                 }
 

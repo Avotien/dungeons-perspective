@@ -12,11 +12,11 @@ import net.caffeinemc.mods.sodium.client.model.light.LightMode;
 import net.caffeinemc.mods.sodium.client.model.light.LightPipeline;
 import net.caffeinemc.mods.sodium.client.model.light.LightPipelineProvider;
 import net.caffeinemc.mods.sodium.client.model.light.data.QuadLightData;
-import net.caffeinemc.mods.sodium.client.render.frapi.helper.ColorHelper;
-import net.caffeinemc.mods.sodium.client.render.frapi.mesh.MutableQuadViewImpl;
-import net.caffeinemc.mods.sodium.client.render.frapi.render.AbstractBlockRenderContext;
+import net.caffeinemc.mods.sodium.client.render.helper.ColorHelper;
+import net.caffeinemc.mods.sodium.client.render.model.MutableQuadViewImpl;
+import net.caffeinemc.mods.sodium.client.render.model.AbstractBlockRenderContext;
 import net.caffeinemc.mods.sodium.fabric.block.FabricBlockAccess;
-import net.fabricmc.fabric.api.renderer.v1.material.ShadeMode;
+import net.fabricmc.fabric.api.renderer.v1.mesh.ShadeMode;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.IceBlock;
 import net.minecraft.block.TranslucentBlock;
@@ -55,8 +55,8 @@ public abstract class AbstractRenderContextMixin implements BlockCullerUser {
     @Inject(at = @At("RETURN"), method = "isFaceCulled", cancellable = true)
     protected final void isFaceCulledDungeons(@Nullable Direction direction, CallbackInfoReturnable<Boolean> ci) {
         if(MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null && Mod.enabled && !(state.getBlock() instanceof TranslucentBlock) && Mod.shouldReload) {
-                    if(  MinecraftClient.getInstance().cameraEntity != null){
-                        boolean bool = pos.toCenterPos().getY() > MinecraftClient.getInstance().cameraEntity.getBlockPos().up().getY();
+                    if(  MinecraftClient.getInstance().getCameraEntity() != null){
+                        boolean bool = pos.toCenterPos().getY() > MinecraftClient.getInstance().getCameraEntity().getBlockPos().up().getY();
                         boolean boo3 = pos.toCenterPos().distanceTo(Mod.preMod) < Mod.getZoom()*Mod.zoomMetric*1.25F;
                         boolean bool3 = false;
 
@@ -64,10 +64,9 @@ public abstract class AbstractRenderContextMixin implements BlockCullerUser {
 
 
                         }
-                        VoxelShape selfShape = direction != null ?  state.getCullingFace(MinecraftClient.getInstance().world, pos, direction) : null;
+                        VoxelShape selfShape = direction != null ?  state.getCullingFace(direction) : null;
 
-                        boolean bool2 = Mod.preMod.subtract(MinecraftClient.getInstance().cameraEntity.getPos()).dotProduct(pos.toCenterPos().subtract(MinecraftClient.getInstance().cameraEntity.getPos())) >0 ;
-
+                        boolean bool2 = Mod.preMod.subtract(MinecraftClient.getInstance().getCameraEntity().getEntityPos()).dotProduct(pos.toCenterPos().subtract(MinecraftClient.getInstance().getCameraEntity().getEntityPos())) >0 ;
 
 
 
@@ -84,15 +83,15 @@ public abstract class AbstractRenderContextMixin implements BlockCullerUser {
   /*  @Inject(at = @At("TAIL"), method = "shadeQuad", cancellable = true,remap = false)
 
     protected void shadeQuadRooster(MutableQuadViewImpl quad, LightMode lightMode, boolean emissive, ShadeMode shadeMode, CallbackInfo info) {
-        BlockHitResult result  = MinecraftClient.getInstance().cameraEntity.getWorld().raycast(new RaycastContext(MinecraftClient.getInstance().cameraEntity.getEyePos(), pos.toCenterPos().add(pos.toCenterPos().getX() > MinecraftClient.getInstance().cameraEntity.getX() ? -0.6: 0.6,pos.toCenterPos().getY() > MinecraftClient.getInstance().cameraEntity.getEyeY() ? -0.6: 0.6,pos.toCenterPos().getZ() > MinecraftClient.getInstance().cameraEntity.getZ() ? -0.6: 0.6), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, MinecraftClient.getInstance().cameraEntity));
+        BlockHitResult result  = MinecraftClient.getInstance().cameraEntity.getEntityWorld().raycast(new RaycastContext(MinecraftClient.getInstance().cameraEntity.getEyePos(), pos.toCenterPos().add(pos.toCenterPos().getX() > MinecraftClient.getInstance().cameraEntity.getX() ? -0.6: 0.6,pos.toCenterPos().getY() > MinecraftClient.getInstance().cameraEntity.getEyeY() ? -0.6: 0.6,pos.toCenterPos().getZ() > MinecraftClient.getInstance().cameraEntity.getZ() ? -0.6: 0.6), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, MinecraftClient.getInstance().cameraEntity));
 
-        BlockState block  = MinecraftClient.getInstance().cameraEntity.getWorld().getBlockState(result.getBlockPos());
-        if((MinecraftClient.getInstance().cameraEntity.getPos().distanceTo(pos.toCenterPos())) < 16 &&  (block != null && !result.getType().equals(HitResult.Type.MISS) && block != state )) {
+        BlockState block  = MinecraftClient.getInstance().cameraEntity.getEntityWorld().getBlockState(result.getBlockPos());
+        if((MinecraftClient.getInstance().cameraEntity.getEntityPos().distanceTo(pos.toCenterPos())) < 16 &&  (block != null && !result.getType().equals(HitResult.Type.MISS) && block != state )) {
 
             float[] brightnesses = this.quadLightData.br;
 
             for(int i = 0; i < 4; ++i) {
-                quad.color(i, ColorARGB.mulRGB(quad.color(i), (float) (Math.max(0,(0.5+0.5*MinecraftClient.getInstance().cameraEntity.getPos().distanceTo(pos.toCenterPos())/16))*brightnesses[i])));
+                quad.color(i, ColorARGB.mulRGB(quad.color(i), (float) (Math.max(0,(0.5+0.5*MinecraftClient.getInstance().cameraEntity.getEntityPos().distanceTo(pos.toCenterPos())/16))*brightnesses[i])));
             }
         }
 

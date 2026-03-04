@@ -10,6 +10,8 @@ import net.minecraft.block.TrapdoorBlock;
 import net.minecraft.block.WallMountedBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
+import net.minecraft.client.tutorial.TutorialManager;
+import net.minecraft.client.input.SystemKeycodes;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
@@ -91,7 +93,7 @@ public class MouseMixin implements MouseAccessor {
 
         if (client.isWindowFocused()) {
             if (!cursorLocked) {
-                if (!MinecraftClient.IS_SYSTEM_MAC) {
+                if (!SystemKeycodes.IS_MAC_OS) {
                     KeyBinding.updatePressedStates();
                 }
 
@@ -99,9 +101,9 @@ public class MouseMixin implements MouseAccessor {
 
                 if (Mod.enabled) {
                     // Merely hide the cursor instead of "disabling" it
-                    InputUtil.setCursorParameters(client.getWindow().getHandle(), GLFW.GLFW_CURSOR_NORMAL, x, y);
+                    InputUtil.setCursorParameters(client.getWindow(), GLFW.GLFW_CURSOR_NORMAL, x, y);
                 } else {
-                    InputUtil.setCursorParameters(client.getWindow().getHandle(), GLFW.GLFW_CURSOR_DISABLED, x, y);
+                    InputUtil.setCursorParameters(client.getWindow(), GLFW.GLFW_CURSOR_DISABLED, x, y);
 
                     x = client.getWindow().getWidth() / 2.0;
                     y = client.getWindow().getHeight() / 2.0;
@@ -134,7 +136,7 @@ public class MouseMixin implements MouseAccessor {
                 x = client.getWindow().getWidth() / 2.0;
                 y = client.getWindow().getHeight() / 2.0;
             }
-            InputUtil.setCursorParameters(client.getWindow().getHandle(), GLFW.GLFW_CURSOR_NORMAL, x, y);
+            InputUtil.setCursorParameters(client.getWindow(), GLFW.GLFW_CURSOR_NORMAL, x, y);
         }
     }
     int lasti;
@@ -147,15 +149,15 @@ public class MouseMixin implements MouseAccessor {
             at = @At(value = "INVOKE", target = "net/minecraft/client/tutorial/TutorialManager.onUpdateMouse(DD)V")
     )
     private void updateMouseAXIV(
-            double timeDelta, CallbackInfo ci, @Local(ordinal = 1) double i, @Local(ordinal = 2) double j, @Local int k
+            double timeDelta, CallbackInfo ci, @Local(ordinal = 1) double i, @Local(ordinal = 2) double j
     ) {
         GameRenderer renderer = client.gameRenderer;
         Window window = client.getWindow();
         Mouse mouse = client.mouse;
 
         Camera camera = renderer.getCamera();
-        float tickDelta = camera.getLastTickDelta();
-        Entity cameraEntity = client.cameraEntity;
+        float tickDelta = camera.getLastTickProgress();
+        Entity cameraEntity = client.getCameraEntity();
         boolean spell = false;
 
         if (Mod.enabled && cameraEntity != null && client.player != null) {
@@ -165,7 +167,7 @@ public class MouseMixin implements MouseAccessor {
             }
             if(isController) {
                 if (timeGone > 40) {
-                    InputUtil.setCursorParameters(client.getWindow().getHandle(), InputUtil.GLFW_CURSOR_DISABLED,
+                    InputUtil.setCursorParameters(client.getWindow(), InputUtil.GLFW_CURSOR_DISABLED,
                             x, y
                     );
                     Mod.noMouse = true;
@@ -175,7 +177,7 @@ public class MouseMixin implements MouseAccessor {
                 } else {
                     if (timeGone > 40) {
                         timeGone = 0;
-                        InputUtil.setCursorParameters(client.getWindow().getHandle(), InputUtil.GLFW_CURSOR_NORMAL,
+                        InputUtil.setCursorParameters(client.getWindow(), InputUtil.GLFW_CURSOR_NORMAL,
                                 x, y
                         );
                     }
@@ -183,14 +185,14 @@ public class MouseMixin implements MouseAccessor {
             }
                 if (client.options.pickItemKey.isPressed()||ClientInit.moveCameraBinding.isPressed() || Mod.rotateToggle) {
                     if (lastX == null || lastY == null) {
-                        InputUtil.setCursorParameters(client.getWindow().getHandle(), InputUtil.GLFW_CURSOR_DISABLED,
+                        InputUtil.setCursorParameters(client.getWindow(), InputUtil.GLFW_CURSOR_DISABLED,
                                 x, y
                         );
                         lastX = x;
                         lastY = y;
                     }
                     float yaw1 = (float) (Mod.yaw + i / 8.0D);
-                    float zoom = (float) ( j * k / 8.0D)/45F;
+                    float zoom = (float) ( j / 8.0D)/45F;
                     Mod.yaw = yaw1;
                     if(!Config.GSON.instance().XIV) {
                         Mod.pitch = 45;
@@ -207,7 +209,7 @@ public class MouseMixin implements MouseAccessor {
                 } else {
                     if (lastX != null && lastY != null) {
                         InputUtil.setCursorParameters(
-                                client.getWindow().getHandle(),
+                                client.getWindow(),
                                 GLFW.GLFW_CURSOR_NORMAL,
                                 lastX != null ? lastX : x,
                                 lastY != null ? lastY : y
@@ -219,7 +221,7 @@ public class MouseMixin implements MouseAccessor {
                         lastY = null;
                     }
                     if(Mod.horizontalTarget != null){
-                        Mod.horizontalTarget = new BlockHitResult(Mod.horizontalTarget.getPos().add(0, ((-j*k)/40),0),Mod.horizontalTarget.getSide(),BlockPos.ofFloored(Mod.horizontalTarget.getPos().add(0, ((-j*k)/40),0)),true);
+                        Mod.horizontalTarget = new BlockHitResult(Mod.horizontalTarget.getPos().add(0, ((-j)/40),0),Mod.horizontalTarget.getSide(),BlockPos.ofFloored(Mod.horizontalTarget.getPos().add(0, ((-j)/40),0)),true);
 
                     }
                     Vector2d res = new Vector2d(window.getFramebufferWidth(), window.getFramebufferHeight());
@@ -239,33 +241,33 @@ public class MouseMixin implements MouseAccessor {
                     Quaternionf quaternionf = camera.getRotation().conjugate(new Quaternionf());
                     Matrix4f matrix4f2 = (new Matrix4f()).rotation(quaternionf);
                     Frustum frustum = new Frustum(matrix4f2,Ortho.createOrthoMatrix(tickDelta,20));
-                    Box box = Box.of((Config.GSON.instance().ortho ? camera.getPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getPos()),2,2,2)
+                    Box box = Box.of((Config.GSON.instance().ortho ? camera.getCameraPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getCameraPos()),2,2,2)
                             .stretch(rayDir.multiply(renderer.getFarPlaneDistance()*2))
                             .expand(1.0, 1.0, 1.0);
-                    Vec3d end =                             (Config.GSON.instance().ortho ? camera.getPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getPos()).add(rayDir.multiply(renderer.getFarPlaneDistance()));
+                    Vec3d end =                             (Config.GSON.instance().ortho ? camera.getCameraPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getCameraPos()).add(rayDir.multiply(renderer.getFarPlaneDistance()));
                     Vec3d vec3d5= camera.getProjection().getPosition(-2f*(float)(i-0.5)*(float)aspect,-2f*(float)(j-0.5));
-                    if(cameraEntity instanceof PlayerEntity player && player.isFallFlying()){
+                    if(cameraEntity instanceof PlayerEntity player && player.isGliding()){
 
 
                         if(((CameraAccessor)camera).getPosBeforeModulation() != null){
-                            HitResult hitResult0 = raycast(Config.GSON.instance().ortho ? camera.getPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getPos(),end,new RaycastContextCull(
-                                    Config.GSON.instance().ortho ? camera.getPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getPos(),
+                            HitResult hitResult0 = raycast(Config.GSON.instance().ortho ? camera.getCameraPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getCameraPos(),end,new RaycastContextCull(
+                                    Config.GSON.instance().ortho ? camera.getCameraPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getCameraPos(),
                                     end,
                                     CustomShapeTypes.AIR_AT_LEVEL,
                                     RaycastContext.ShapeType.OUTLINE,
                                     RaycastContext.FluidHandling.NONE,
                                     cameraEntity
                             ),(innerContext, pos) -> {
-                                BlockState blockState = client.player.getWorld().getBlockState(pos);
-                                FluidState fluidState = client.player.getWorld().getFluidState(pos);
+                                BlockState blockState = client.player.getEntityWorld().getBlockState(pos);
+                                FluidState fluidState = client.player.getEntityWorld().getFluidState(pos);
                                 Vec3d vec3d = innerContext.getStart();
                                 Vec3d vec3d2 = innerContext.getEnd();
-                                VoxelShape voxelShape = innerContext.getBlockShape(blockState, client.player.getWorld(), pos);
+                                VoxelShape voxelShape = innerContext.getBlockShape(blockState, client.player.getEntityWorld(), pos);
 
 
                                 BlockHitResult firstResult = voxelShape.raycast(vec3d, vec3d2, pos);
 
-                                VoxelShape voxelShape2 = innerContext.getFluidShape(fluidState, client.player.getWorld(), pos);
+                                VoxelShape voxelShape2 = innerContext.getFluidShape(fluidState, client.player.getEntityWorld(), pos);
                                 BlockHitResult blockHitResult2 = voxelShape2.raycast(vec3d, vec3d2, pos);
                                 double d = firstResult == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(firstResult.getPos());
                                 double e = blockHitResult2 == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(blockHitResult2.getPos());
@@ -283,23 +285,23 @@ public class MouseMixin implements MouseAccessor {
                     }
 
 
-                    HitResult hitResult0 = raycast(Config.GSON.instance().ortho ? camera.getPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getPos(),end,new RaycastContextCull(
-                            Config.GSON.instance().ortho ? camera.getPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getPos(),
+                    HitResult hitResult0 = raycast(Config.GSON.instance().ortho ? camera.getCameraPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getCameraPos(),end,new RaycastContextCull(
+                            Config.GSON.instance().ortho ? camera.getCameraPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getCameraPos(),
                             end,
                             CustomShapeTypes.CULLED,
                             RaycastContext.ShapeType.OUTLINE,
                             RaycastContext.FluidHandling.NONE,
                             cameraEntity
                     ),(innerContext, pos) -> {
-                        BlockState blockState = client.player.getWorld().getBlockState(pos);
-                        FluidState fluidState = client.player.getWorld().getFluidState(pos);
+                        BlockState blockState = client.player.getEntityWorld().getBlockState(pos);
+                        FluidState fluidState = client.player.getEntityWorld().getFluidState(pos);
                         Vec3d vec3d = innerContext.getStart();
                         Vec3d vec3d2 = innerContext.getEnd();
-                        VoxelShape voxelShape = innerContext.getBlockShape(blockState, client.player.getWorld(), pos);
+                        VoxelShape voxelShape = innerContext.getBlockShape(blockState, client.player.getEntityWorld(), pos);
                         BlockHitResult firstResult = client.world.raycastBlock(vec3d, vec3d2, pos, voxelShape, blockState);
 
 
-                        VoxelShape voxelShape2 = innerContext.getFluidShape(fluidState, client.player.getWorld(), pos);
+                        VoxelShape voxelShape2 = innerContext.getFluidShape(fluidState, client.player.getEntityWorld(), pos);
                         BlockHitResult blockHitResult2 = voxelShape2.raycast(vec3d, vec3d2, pos);
                         double d = firstResult == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(firstResult.getPos());
                         double e = blockHitResult2 == null ? Double.MAX_VALUE : innerContext.getStart().squaredDistanceTo(blockHitResult2.getPos());
@@ -308,12 +310,12 @@ public class MouseMixin implements MouseAccessor {
                         Vec3d vec3d = innerContext.getStart().subtract(innerContext.getEnd());
                         return BlockHitResult.createMissed(innerContext.getEnd(), Direction.getFacing(vec3d.x, vec3d.y, vec3d.z), BlockPos.ofFloored(innerContext.getEnd()));
                     });
-                    BlockHitResult scanUp = client.player.getWorld().raycast(
+                    BlockHitResult scanUp = client.player.getEntityWorld().raycast(
                             new RaycastContext(
-                                    hitResult0.getPos(),Config.GSON.instance().ortho ? camera.getPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getPos(), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE,client.player)
+                                    hitResult0.getPos(),Config.GSON.instance().ortho ? camera.getCameraPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getCameraPos(), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE,client.player)
 
                     );
-                    BlockHitResult scanDown = client.player.getWorld().raycast(
+                    BlockHitResult scanDown = client.player.getEntityWorld().raycast(
                             new RaycastContext(
                                     scanUp.getPos(),scanUp.getPos().add(hitResult0.getPos().subtract(scanUp.getPos()).normalize().multiply(renderer.getFarPlaneDistance()*2)), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE,client.player)
 
@@ -325,14 +327,14 @@ public class MouseMixin implements MouseAccessor {
                     HitResult hitResult = raycastExpanded(
                             cameraEntity,
                             scanDown.getPos(),
-                            Config.GSON.instance().ortho ? camera.getPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getPos(),
+                            Config.GSON.instance().ortho ? camera.getCameraPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getCameraPos(),
                             box,
                             entity -> !entity.isSpectator() && entity.canHit(),
                             renderer.getFarPlaneDistance()*2
                     ,0.5F);
                     HitResult hitResult2 = raycastExpanded(
                             cameraEntity,
-                            Config.GSON.instance().ortho ? camera.getPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getPos(),
+                            Config.GSON.instance().ortho ? camera.getCameraPos().add(new Vec3d(camera.getDiagonalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.x).multiply(-0.72)).add(new Vec3d(camera.getVerticalPlane()).multiply(Mod.zoomMetric*Mod.getZoom()).multiply(coords.y).multiply(0.72)) :camera.getCameraPos(),
                             end,
                             box,
                             entity -> !entity.isSpectator() && entity.canHit(),
@@ -341,10 +343,10 @@ public class MouseMixin implements MouseAccessor {
                     if (!(hitResult instanceof EntityHitResult result && result.getType().equals(HitResult.Type.ENTITY))) {
                         if(!(hitResult2 instanceof EntityHitResult result2 && result2.getType().equals(HitResult.Type.ENTITY))){
                             hitResult = scanDown;
-                            if(cameraEntity instanceof PlayerEntity player && hitResult.getPos().distanceTo(cameraEntity.getEyePos()) > player.getBlockInteractionRange() && cameraEntity.getWorld().getBlockEntity(BlockPos.ofFloored(hitResult.getPos())) == null
-                                    && !(cameraEntity.getWorld().getBlockState(BlockPos.ofFloored(hitResult.getPos())).getBlock() instanceof WallMountedBlock)
-                                    && !(cameraEntity.getWorld().getBlockState(BlockPos.ofFloored(hitResult.getPos())).getBlock() instanceof DoorBlock)
-                                    && !(cameraEntity.getWorld().getBlockState(BlockPos.ofFloored(hitResult.getPos())).getBlock() instanceof TrapdoorBlock)) {
+                            if(cameraEntity instanceof PlayerEntity player && hitResult.getPos().distanceTo(cameraEntity.getEyePos()) > player.getBlockInteractionRange() && cameraEntity.getEntityWorld().getBlockEntity(BlockPos.ofFloored(hitResult.getPos())) == null
+                                    && !(cameraEntity.getEntityWorld().getBlockState(BlockPos.ofFloored(hitResult.getPos())).getBlock() instanceof WallMountedBlock)
+                                    && !(cameraEntity.getEntityWorld().getBlockState(BlockPos.ofFloored(hitResult.getPos())).getBlock() instanceof DoorBlock)
+                                    && !(cameraEntity.getEntityWorld().getBlockState(BlockPos.ofFloored(hitResult.getPos())).getBlock() instanceof TrapdoorBlock)) {
                                 hitResult = new BlockHitResult(new Vec3d(scanDown.getPos().getX(), cameraEntity.getEyeY(), scanDown.getPos().getZ()), scanDown.getSide(),BlockPos.ofFloored(scanDown.getPos().getX(), cameraEntity.getEyeY(), scanDown.getPos().getZ()),false);
                             }
                         }
@@ -434,7 +436,7 @@ public class MouseMixin implements MouseAccessor {
     }
     @Nullable
      private static EntityHitResult raycastExpanded(Entity entity, Vec3d min, Vec3d max, Box box, Predicate<Entity> predicate, double maxDistance, float margin) {
-        World world = entity.getWorld();
+        World world = entity.getEntityWorld();
         double d = maxDistance;
         Entity entity2 = null;
         Vec3d vec3d = null;
@@ -498,25 +500,14 @@ public class MouseMixin implements MouseAccessor {
 
 
 
-    @Redirect(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;scrollInHotbar(D)V"))
-
-
-    private void scrollInHotbarXIV(PlayerInventory instance, double scrollAmount) {
-
-            if (Mod.enabled && Config.GSON.instance().scrollWheelZoom ) {
-
-
-                Mod.zoom = (Math.clamp(Mod.zoom - (float) scrollAmount * 0.2f,2F/Math.clamp(Config.GSON.instance().zoomFactor,1F,1.5F),10.0F));
-
-            } else {
-
-                instance.scrollInHotbar(scrollAmount);
-
-
-            }
-
-
+    @Redirect(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;setSelectedSlot(I)V"))
+    private void scrollInHotbarXIV(PlayerInventory instance, int slot, @Local(ordinal = 1) double scrollAmount) {
+        if (Mod.enabled && Config.GSON.instance().scrollWheelZoom) {
+            Mod.zoom = Math.clamp(Mod.zoom - (float) scrollAmount * 0.2f, 2F / Math.clamp(Config.GSON.instance().zoomFactor, 1F, 1.5F), 10.0F);
+        } else {
+            instance.setSelectedSlot(slot);
         }
+    }
 
     @Override
     public void setRightClick(boolean bool) {

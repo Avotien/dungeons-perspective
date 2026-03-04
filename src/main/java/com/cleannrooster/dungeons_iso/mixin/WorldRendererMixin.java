@@ -15,8 +15,10 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexRendering;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.chunk.ChunkBuilder;
+import net.minecraft.client.render.state.OutlineRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.BlockHitResult;
@@ -38,8 +40,6 @@ import java.util.List;
 
 @Mixin(WorldRenderer.class)
 public abstract class WorldRendererMixin implements WorldRendererAccessor {
-    @Shadow
-    private double lastTranslucentSortX;
     private static Vec3d getMaxIntensityColorXIV(float hue) {
         float f = 5.99999F;
         int i = (int)(MathHelper.clamp(hue, 0.0F, 1.0F) * 5.99999F);
@@ -79,20 +79,20 @@ public abstract class WorldRendererMixin implements WorldRendererAccessor {
         double d = Math.max(Math.max(1.0, vec3d4.x), Math.max(vec3d4.y, vec3d4.z));
         return new Vec3d(vec3d4.x / d, vec3d4.y / d, vec3d4.z / d);
     }
-    private static void drawCuboidShapeOutlineXIV(MatrixStack matrices, VertexConsumer vertexConsumer, VoxelShape shape, double offsetX, double offsetY, double offsetZ, float red, float green, float blue, float alpha) {
+/*    private static void drawCuboidShapeOutlineXIV(MatrixStack matrices, VertexConsumer vertexConsumer, VoxelShape shape, double offsetX, double offsetY, double offsetZ, float red, float green, float blue, float alpha) {
         MatrixStack.Entry entry = matrices.peek();
-        shape.forEachEdge((minX, minY, minZ, maxX, maxY, maxZ) -> {
-            float k = (float)(maxX - minX);
-            float l = (float)(maxY - minY);
-            float m = (float)(maxZ - minZ);
-            float n = MathHelper.sqrt(k * k + l * l + m * m);
-            k /= n;
-            l /= n;
-            m /= n;
-            vertexConsumer.vertex(entry, (float)(minX + offsetX), (float)(minY + offsetY), (float)(minZ + offsetZ)).color(red, green, blue, alpha).normal(entry, k, l, m);
-            vertexConsumer.vertex(entry, (float)(maxX + offsetX), (float)(maxY + offsetY), (float)(maxZ + offsetZ)).color(red, green, blue, alpha).normal(entry, k, l, m);
-        });
-    }
+            shape.forEachEdge((minX, minY, minZ, maxX, maxY, maxZ) -> {
+                float k = (float)(maxX - minX);
+                float l = (float)(maxY - minY);
+                float m = (float)(maxZ - minZ);
+                float n = MathHelper.sqrt(k * k + l * l + m * m);
+                k /= n;
+                l /= n;
+                m /= n;
+                vertexConsumer.vertex(entry, (float)(minX + offsetX), (float)(minY + offsetY), (float)(minZ + offsetZ)).color(red, green, blue, alpha).normal(entry, k, l, m);
+                vertexConsumer.vertex(entry, (float)(maxX + offsetX), (float)(maxY + offsetY), (float)(maxZ + offsetZ)).color(red, green, blue, alpha).normal(entry, k, l, m);
+            });
+    } */
 
         @Override
     public ObjectArrayList<ChunkBuilder.BuiltChunk> chunks() {
@@ -100,19 +100,21 @@ public abstract class WorldRendererMixin implements WorldRendererAccessor {
     }
 
     @Shadow
-    private double lastTranslucentSortY;
-    @Shadow
-    private double lastTranslucentSortZ;
-    @Shadow
     private  ObjectArrayList<ChunkBuilder.BuiltChunk> builtChunks;
 
 
-    @Inject(method = "drawBlockOutline", at = @At("HEAD"),cancellable = true)
-    private void drawBlockOutlineXIV(MatrixStack matrices, VertexConsumer vertexConsumer, Entity entity, double cameraX, double cameraY, double cameraZ, BlockPos pos, BlockState state,CallbackInfo info) {
-        if(Mod.enabled && Mod.mouseTarget instanceof BlockHitResult blockHitResult ) {
-            drawCuboidShapeOutlineXIV(matrices, vertexConsumer, state.getOutlineShape(MinecraftClient.getInstance().world, pos, ShapeContext.of(entity)), (double)blockHitResult.getBlockPos().getX() - cameraX, (double)blockHitResult.getBlockPos().getY() - cameraY, (double)blockHitResult.getBlockPos().getZ() - cameraZ, 0.0F, 0.0F, 0.0F, 0.4F);
-            info.cancel();;
+    @Inject(method = "drawBlockOutline", at = @At("HEAD"), cancellable = true)
+        private void drawBlockOutlineXIV(MatrixStack matrices, VertexConsumer vertexConsumer, double cameraX, double cameraY, double cameraZ, OutlineRenderState state, int color, float lineWidth, CallbackInfo info) {
+            if(Mod.enabled && Mod.mouseTarget instanceof BlockHitResult blockHitResult) {
+                BlockPos blockPos = state.pos();
+                VertexRendering.drawOutline(matrices, vertexConsumer, state.shape(),
+                    blockPos.getX() - cameraX,
+                    blockPos.getY() - cameraY,
+                    blockPos.getZ() - cameraZ,
+                    ColorHelper.fromFloats(0.4F, 0.0F, 0.0F, 0.0F),
+                    lineWidth);
+                info.cancel();
+            }
         }
-    }
 
 }
