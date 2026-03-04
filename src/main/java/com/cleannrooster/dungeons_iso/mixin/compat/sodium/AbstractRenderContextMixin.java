@@ -71,7 +71,7 @@ public abstract class AbstractRenderContextMixin implements BlockCullerUser {
 
 
 
-                        ci.setReturnValue(selfShape != null && selfShape.isEmpty()  );
+                        ci.setReturnValue(bool2 && selfShape != null && selfShape.isEmpty());
 
                     }
 

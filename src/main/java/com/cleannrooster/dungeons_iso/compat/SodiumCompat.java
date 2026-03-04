@@ -48,4 +48,14 @@ public class SodiumCompat {
 
         }
     }
+    public static void scheduleFullRebuild(MinecraftClient client) {
+        if (client.player == null) return;
+        BlockPos pos = client.player.getBlockPos();
+        int range = client.options.getClampedViewDistance() * 16;
+        SodiumWorldRenderer.instance().scheduleRebuildForBlockArea(
+            pos.getX() - range, pos.getY() - 64, pos.getZ() - range,
+            pos.getX() + range, pos.getY() + 64, pos.getZ() + range,
+            true
+        );
+    }
 }

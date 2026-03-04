@@ -122,7 +122,7 @@ public abstract class CameraMixin implements CameraAccessor {
 
             Vector3f vector3f = (new Vector3f(0, 0, (float)((float) args.get(0) * Mod.getZoom()))).rotate(MinecraftClient.getInstance().gameRenderer.getCamera().getRotation());
             Vec3d vec = (new Vec3d(this.pos.x + (double)vector3f.x, this.pos.y + (double)vector3f.y, this.pos.z + (double)vector3f.z));
-            Mod.preMod = new Vec3d(vec.x, vec.y - 0.8, vec.z);
+            Mod.preMod = vec;
             BlockHitResult result = MinecraftClient.getInstance().getCameraEntity().getEntityWorld().raycast(new RaycastContext(MinecraftClient.getInstance().getCameraEntity().getEyePos(), vec, RaycastContext.ShapeType.VISUAL, RaycastContext.FluidHandling.NONE, MinecraftClient.getInstance().getCameraEntity()));
             Mod.hit = this.area.raycast(new RaycastContext(this.focusedEntity.getEyePos(),vec, RaycastContext.ShapeType.VISUAL, RaycastContext.FluidHandling.NONE, this.focusedEntity));
 

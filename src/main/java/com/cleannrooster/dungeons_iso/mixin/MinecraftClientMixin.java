@@ -620,8 +620,10 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
         ))) {
             if (!Config.GSON.instance().force && Mod.enabled) {
                 Mod.enabled = false;
-
                 options.setPerspective(Mod.lastPerspective);
+                if (FabricLoader.getInstance().isModLoaded("sodium")) {
+                    SodiumCompat.scheduleFullRebuild(client);
+                }
                 Util.debug("Disabled Minecraft XIV");
                 if(client.currentScreen == null) {
                     InputUtil.setCursorParameters(client.getWindow(), GLFW.GLFW_CURSOR_DISABLED,client.mouse.getX(), client.mouse.getY());
