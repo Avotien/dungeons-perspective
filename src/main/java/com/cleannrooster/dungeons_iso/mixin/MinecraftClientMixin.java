@@ -977,7 +977,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
         this.mouseCooldown = cooldown;
         return this.mouseCooldown;
     }
-    @Inject(method = "disconnect(Lnet/minecraft/client/gui/screen/Screen;)V", at = @At("HEAD"))
+    @Inject(method = "disconnect(Lnet/minecraft/text/Text;)V", at = @At("HEAD"))
     public void disconnectPre(Text text, CallbackInfo ci) {
         ClientInit.capabilities = null;
     }

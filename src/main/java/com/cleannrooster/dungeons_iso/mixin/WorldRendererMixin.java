@@ -106,8 +106,9 @@ public abstract class WorldRendererMixin implements WorldRendererAccessor {
     @Inject(method = "drawBlockOutline", at = @At("HEAD"), cancellable = true)
         private void drawBlockOutlineXIV(MatrixStack matrices, VertexConsumer vertexConsumer, double cameraX, double cameraY, double cameraZ, OutlineRenderState state, int color, float lineWidth, CallbackInfo info) {
             if(Mod.enabled && Mod.mouseTarget instanceof BlockHitResult blockHitResult) {
-                BlockPos blockPos = state.pos();
-                VertexRendering.drawOutline(matrices, vertexConsumer, state.shape(),
+                BlockPos blockPos = blockHitResult.getBlockPos();
+                VoxelShape shape = MinecraftClient.getInstance().world.getBlockState(blockPos).getOutlineShape(MinecraftClient.getInstance().world, blockPos, ShapeContext.absent());
+                VertexRendering.drawOutline(matrices, vertexConsumer, shape,
                     blockPos.getX() - cameraX,
                     blockPos.getY() - cameraY,
                     blockPos.getZ() - cameraZ,
