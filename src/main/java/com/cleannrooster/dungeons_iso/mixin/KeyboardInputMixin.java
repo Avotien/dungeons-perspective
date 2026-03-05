@@ -36,9 +36,9 @@ public abstract class KeyboardInputMixin extends Input {
     )
     private void movementXIV(CallbackInfo ci) {
         Vector2f movement = new Vector2f(this.movementVector.y, this.movementVector.x);
-        if (Mod.enabled ) {
-            if(FabricLoader.getInstance().isModLoaded("midnightcontrols") && Mod.noMouse && Mod.useTimer > 40){
-                if(MidnightControlsCompat.isEnabled()){
+        if (Mod.enabled) {
+            if (FabricLoader.getInstance().isModLoaded("midnightcontrols") && Mod.noMouse && Mod.useTimer > 40) {
+                if (MidnightControlsCompat.isEnabled()) {
                     return;
                 }
             }
@@ -46,67 +46,60 @@ public abstract class KeyboardInputMixin extends Input {
             assert client.player != null;
 
             float tickDelta = client.gameRenderer.getCamera().getLastTickProgress();
-
             boolean bool = ((MinecraftClientAccessor)client).getLocation() instanceof EntityHitResult result && result.getEntity() instanceof ItemEntity;
             float yaw = client.gameRenderer.getCamera().getYaw() - client.player.getYaw(tickDelta);
-            if((Config.GSON.instance().clickToMove || bool) &&  ((MinecraftClientAccessor)client).getOriginalLocation() != null  && ((MinecraftClientAccessor)client).getLocation() != null &&((MinecraftClientAccessor)client).getLocation().getPos() instanceof Vec3d vec3d
-                    && client.player.squaredDistanceTo(((MinecraftClientAccessor)client).getOriginalLocation()) < (((MinecraftClientAccessor)client).getOriginalLocation()).squaredDistanceTo(((MinecraftClientAccessor)client).getLocation().getPos())-1) {
-                   if(((MinecraftClientAccessor)client).getLocation() instanceof EntityHitResult && ((MinecraftClientAccessor)client).getLocation().getPos().subtract(0,((MinecraftClientAccessor)client).getLocation().getPos().getY()-(client.player.getEntityPos()).getY(),0)
-                           .squaredDistanceTo(client.player.getEntityPos()) < (bool ? client.player.getWidth()/2 :(client.player.getEntityInteractionRange() * client.player.getEntityInteractionRange()/4))){
-                       return;
-                   }
-                if(((MinecraftClientAccessor)client).getLocation() instanceof BlockHitResult result && Mod.isInteractable(result)){
+
+            if ((Config.GSON.instance().clickToMove || bool)
+                    && ((MinecraftClientAccessor)client).getOriginalLocation() != null
+                    && ((MinecraftClientAccessor)client).getLocation() != null
+                    && ((MinecraftClientAccessor)client).getLocation().getPos() instanceof Vec3d vec3d
+                    && client.player.squaredDistanceTo(((MinecraftClientAccessor)client).getOriginalLocation()) < ((MinecraftClientAccessor)client).getOriginalLocation().squaredDistanceTo(((MinecraftClientAccessor)client).getLocation().getPos()) - 1) {
+
+                if (((MinecraftClientAccessor)client).getLocation() instanceof EntityHitResult
+                        && ((MinecraftClientAccessor)client).getLocation().getPos().subtract(0, ((MinecraftClientAccessor)client).getLocation().getPos().getY() - (client.player.getEntityPos()).getY(), 0)
+                        .squaredDistanceTo(client.player.getEntityPos()) < (bool ? client.player.getWidth() / 2 : (client.player.getEntityInteractionRange() * client.player.getEntityInteractionRange() / 4))) {
+                    return;
+                }
+
+                if (((MinecraftClientAccessor)client).getLocation() instanceof BlockHitResult result && Mod.isInteractable(result)) {
                     Hand[] var1 = Hand.values();
                     for (Hand hand : var1) {
-                        var interact = client.interactionManager.interactBlock(client.player,Hand.MAIN_HAND, result);
-
+                        var interact = client.interactionManager.interactBlock(client.player, Hand.MAIN_HAND, result);
                         if (interact.isAccepted()) {
                             if (interact == ActionResult.SUCCESS) {
                                 client.player.swingHand(hand);
                             }
-
                             Mod.crosshairTarget = null;
                             ((MinecraftClientAccessor)client).setLocation(null);
-
                             ((MinecraftClientAccessor)client).setOriginalLocation(null);
                             ClientInit.clickToMove.setPressed(false);
                             return;
                         }
-
+                    }
                 }
-                    movement = new Vector2f(1.0F, 0F);
-                   yaw = getAngle(new Vec3d(0, 0, 0), vec3d.subtract(client.player.getEntityPos()).subtract(0, vec3d.subtract(client.player.getEntityPos()).getY(), 0));
 
-                   movement.mul(new Matrix2f().rotate((float) Math.toRadians(yaw)));
-                   movement.mul(new Matrix2f().rotate((float) Math.toRadians(+client.player.getYaw(tickDelta))));
-                   Mod.unModMovement = new Vector2f(1.0F,0F).mul(new Matrix2f().rotate((float) Math.toRadians(+MinecraftClient.getInstance().gameRenderer.getCamera().getYaw())));
-
-                    this.movementVector = new Vec2f(movement.y, movement.x);
-
-                    this.movementVector = new Vec2f(movement.y, movement.x);
-                    return;
-
-                   }
-
+                movement = new Vector2f(1.0F, 0F);
+                yaw = getAngle(new Vec3d(0, 0, 0), vec3d.subtract(client.player.getEntityPos()).subtract(0, vec3d.subtract(client.player.getEntityPos()).getY(), 0));
+                movement.mul(new Matrix2f().rotate((float) Math.toRadians(yaw)));
+                movement.mul(new Matrix2f().rotate((float) Math.toRadians(+client.player.getYaw(tickDelta))));
+                Mod.unModMovement = new Vector2f(1.0F, 0F).mul(new Matrix2f().rotate((float) Math.toRadians(+MinecraftClient.getInstance().gameRenderer.getCamera().getYaw())));
+                this.movementVector = new Vec2f(movement.y, movement.x);
                 return;
-
-            }
-            else{
+            } else {
                 this.movementVector = Vec2f.ZERO;
             }
-            if(Config.GSON.instance().cameraRelative) {
+
+            if (Config.GSON.instance().cameraRelative) {
                 Mod.relativeYaw = yaw;
                 movement.mul(new Matrix2f().rotate((float) Math.toRadians(-yaw)));
             }
 
-
             this.movementVector = new Vec2f(movement.y, movement.x);
+        }
 
-        }
-        if(this.playerInput.backward() || this.playerInput.forward() || this.playerInput.left() || this.playerInput.right()){
+        if (this.playerInput.backward() || this.playerInput.forward() || this.playerInput.left() || this.playerInput.right()) {
             Mod.useTimer = 0;
-        }
-        else{
+        } else {
             Mod.useTimer++;
         }
     }
