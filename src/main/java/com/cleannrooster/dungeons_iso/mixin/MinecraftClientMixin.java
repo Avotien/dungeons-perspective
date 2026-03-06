@@ -644,7 +644,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
                     Mod.yaw = ((180 + this.player.getYaw() + 180) % 360) - 180;
                     Mod.pitch = -this.player.getPitch();
                 } else {
-                    Mod.yaw = this.player.getYaw();
+                    Mod.yaw = (float)(Math.round(this.player.getYaw() / 90.0) * 90) - 45;
                     Mod.pitch = this.player.getPitch();
                 }
                 Util.debug("Enabled Minecraft XIV");

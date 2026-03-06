@@ -3,22 +3,31 @@ package com.cleannrooster.dungeons_iso.mixin;
 import com.cleannrooster.dungeons_iso.api.BuiltChunkAccessor;
 import com.cleannrooster.dungeons_iso.api.ChunkDataAccessor;
 import com.cleannrooster.dungeons_iso.api.MinecraftClientAccessor;
+import com.cleannrooster.dungeons_iso.api.Ortho;
 import com.cleannrooster.dungeons_iso.api.WorldRendererAccessor;
+import com.cleannrooster.dungeons_iso.compat.SodiumWorldRendererAccessor;
 import com.cleannrooster.dungeons_iso.config.Config;
 import com.cleannrooster.dungeons_iso.mod.Mod;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
+import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
+import net.caffeinemc.mods.sodium.client.world.LevelRendererExtension;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexRendering;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.chunk.ChunkBuilder;
 import net.minecraft.client.render.state.OutlineRenderState;
+import net.minecraft.client.util.ObjectAllocator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.BlockHitResult;
@@ -29,6 +38,7 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.chunk.Chunk;
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -117,5 +127,13 @@ public abstract class WorldRendererMixin implements WorldRendererAccessor {
                 info.cancel();
             }
         }
+    @Inject(method = "render", at = @At(value = "INVOKE", 
+    target = "Lnet/minecraft/client/render/WorldRenderer;updateCamera(Lnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/Frustum;Z)V",
+        shift = At.Shift.AFTER))
+    private void overrideOrthoMatrices(ObjectAllocator allocator, RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, Matrix4f positionMatrix, Matrix4f basicProjectionMatrix, Matrix4f projectionMatrix, GpuBufferSlice fogBuffer, Vector4f fogColor, boolean renderSky, CallbackInfo ci) {
+        if (Config.GSON.instance().ortho && Mod.enabled) {
+            ((LevelRendererExtension)(Object)this).sodium$setMatrices(new ChunkRenderMatrices(projectionMatrix, positionMatrix));
+        }
+    }
 
 }
