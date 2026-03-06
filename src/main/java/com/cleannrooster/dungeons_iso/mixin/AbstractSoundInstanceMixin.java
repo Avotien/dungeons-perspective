@@ -43,7 +43,8 @@ public class AbstractSoundInstanceMixin {
 
     }
   */
-    @Inject(
+/*
+     @Inject(
             method = "getVolume",
             at = @At(value = "RETURN"),
             cancellable = true
@@ -56,7 +57,7 @@ public class AbstractSoundInstanceMixin {
 
         }
     }
-
+*/
 /*    @Inject(
             method = "getX",
             at = @At(value = "RETURN"),

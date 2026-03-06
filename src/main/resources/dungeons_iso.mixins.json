@@ -16,6 +16,7 @@
     "client.PlayerEntityMixin",
     "GameOptionsMixin",
     "AbstractSoundInstanceMixin",
+    "SoundSystemMixin",
     "AbstractHorseEntityMixin",
     "WorldRendererMixin",
     "WorldRendererMixin",
